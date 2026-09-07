@@ -26,8 +26,8 @@ plan and current phase.
 | 3 | Engine-neutral core | ✅ done |
 | 4 | Shared primitives (dot, tooltip, legend, brush) | ✅ done |
 | 5 | Line chart | ✅ done |
-| 6 | Area chart → ship `0.1.0` | 👈 next |
-| 7 | Remaining 6 charts | |
+| 6 | Area chart | ✅ done |
+| 7 | Remaining 6 charts | 👈 next |
 | 8 | Registry / distribution | |
 | 9 | Docs site | |
 | 10 | TanStack Charts as a second engine | |

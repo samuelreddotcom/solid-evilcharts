@@ -1,12 +1,12 @@
 /**
- * Line chart — pure option builders.
+ * Area chart — pure option builders.
  *
- * Every function here maps a snapshot context to an ECharts option fragment.
- * Nothing touches reactive state or the chart instance: the component reads its
- * refs and renderer size ONCE per build into an OptionBuildContext, so each
- * fragment can be reasoned about (and tested) in isolation.
+ * Every function maps a snapshot context to an ECharts option fragment; nothing
+ * touches reactive state or the chart instance. The two exceptions are
+ * `resolveAreaAtPixel`, which needs the live instance for pixel conversion, and
+ * `computePlottedTops`, which feeds it.
  *
- * Ported from EvilCharts `src/registry/charts/echarts-line-chart.tsx` (MIT).
+ * Ported from EvilCharts `src/registry/charts/echarts-area-chart.tsx` (MIT).
  */
 import { LineChart, type LineSeriesOption } from "echarts/charts";
 import {
@@ -21,6 +21,14 @@ import type { ComposeOption } from "echarts/core";
 import * as echarts from "echarts/core";
 
 import {
+  curveConfig,
+  getLoadingData,
+  shimmerWindowStops as sharedShimmerWindowStops,
+  sliceFrom,
+  sliceToNull,
+  type CurveType,
+} from "../../lib/chart-series";
+import {
   FALLBACK_SERIES_COLOR,
   flattenColor,
   getColorsCount,
@@ -28,20 +36,8 @@ import {
   type ChartConfig,
   type ResolvedColors,
 } from "../../lib/chart-tokens";
-import {
-  curveConfig,
-  getLoadingData,
-  shimmerWindowStops as sharedShimmerWindowStops,
-  sliceFrom,
-  sliceToNull,
-} from "../../lib/chart-series";
 import { buildBrushDataZoom, type BrushRange } from "../../lib/echarts-brush";
-import {
-  dotItemStyle,
-  dotStyle,
-  sampleGradient,
-  type DotItemStyleOption,
-} from "../../lib/echarts-dot";
+import { dotItemStyle, dotStyle, sampleGradient } from "../../lib/echarts-dot";
 import { seriesPaint } from "../../lib/echarts-paint";
 import {
   tooltipBaseOption,
@@ -49,37 +45,31 @@ import {
   tooltipRow,
   tooltipShell,
 } from "../../lib/echarts-tooltip";
+import { fillPaint } from "./fills";
 import {
   AXIS_POINTER_OPACITY,
   BRUSH_FILLER_OPACITY,
+  BRUSH_FILL_OPACITY,
   BRUSH_STROKE_OPACITY,
+  BUFFERFILL_PREFIX,
   BUFFER_DASH,
   BUFFER_PREFIX,
-  GLOW_LAYERS,
   GRID_LINE_OPACITY,
   REVEAL_PREFIX,
   STROKE_WIDTH,
-  type CurveType,
+  type AreaSeriesConfig,
   type LegendSlot,
-  type LineSeriesConfig,
   type TooltipSlot,
   type XAxisSlot,
   type YAxisSlot,
 } from "./types";
 
 /**
- * Modular registration keeps the bundle lean — only the pieces this chart
- * needs. `DataZoomComponent` bundles both the slider (brush footer) and inside
- * (wheel/drag) zoom. The brush's frame/handles/labels are raw zrender elements,
- * not the graphic component, so no GraphicComponent is registered.
+ * Modular registration — only what this chart needs. Areas are `type: "line"`
+ * series carrying an `areaStyle`, so no separate chart module is required.
  */
 echarts.use([LineChart, GridComponent, TooltipComponent, DataZoomComponent]);
 
-/**
- * The exact option surface this chart uses. Narrower than ECharts' full
- * EChartsOption, so a misspelled key fails the compile instead of silently
- * reaching setOption.
- */
 export type EChartsOption = ComposeOption<
   | LineSeriesOption
   | GridComponentOption
@@ -87,17 +77,20 @@ export type EChartsOption = ComposeOption<
   | DataZoomComponentOption
 >;
 
-// Single-entry views of the composed option's array-or-single fields — the
-// modular entry points don't export the axis option types directly.
 type ArrayItem<T> = T extends readonly (infer U)[] ? U : T;
 export type XAxisOption = ArrayItem<NonNullable<EChartsOption["xAxis"]>>;
 export type YAxisOption = ArrayItem<NonNullable<EChartsOption["yAxis"]>>;
 
+type EChartsInstance = ReturnType<typeof echarts.init>;
+
 export type OptionBuildContext = {
   data: Record<string, unknown>[];
   config: ChartConfig;
-  lines: LineSeriesConfig[];
+  areas: AreaSeriesConfig[];
+  seriesKeys: string[];
   curveType: CurveType;
+  isStacked: boolean;
+  isExpanded: boolean;
   selectedDataKey: string | null;
   hasSelection: boolean;
   showGrid: boolean;
@@ -111,17 +104,13 @@ export type OptionBuildContext = {
   brushHeight: number;
   enableHoverHighlight: boolean;
   enableHoverReveal: boolean;
-  /** Pointer's x-index while revealing; null = idle, chart looks normal. */
   revealIndex: number | null;
-  /** buildLineSeries writes each line's full per-datum points here. */
   revealSink: Record<string, unknown[]>;
   resolved: ResolvedColors;
-  /** Anchored reveal stroke gradients span the plot in absolute pixels. */
+  /** 2D gradient textures bake at renderer size. */
   rendererSize: { width: number; height: number };
   categories: string[];
-  /** Zoom window carried through rebuilds. */
   brushRange: BrushRange;
-  /** Read per tooltip render — hover never repushes the option. */
   getHoveredKey: () => string | null;
 };
 
@@ -130,17 +119,16 @@ export type OptionBuildContext = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Dims a series only when another one is selected. Lines have no fill, so only
- * the stroke and dots carry an opacity.
+ * Dims a series only when another one is selected.
+ *
+ * Unlike the line chart's, this carries a `fill` too — an area's body is the
+ * dominant visual, so it dims hardest (0.8 → 0.1).
  */
 export function getOpacity(selected: string | null, key: string) {
-  if (selected === null || selected === key) return { stroke: 1, dot: 1 };
-  return { stroke: 0.3, dot: 0.3 };
+  if (selected === null || selected === key) return { fill: 0.8, stroke: 1, dot: 1 };
+  return { fill: 0.1, stroke: 0.3, dot: 0.3 };
 }
 
-// curveConfig, getLoadingData, shimmerWindowStops, sliceToNull and sliceFrom are
-// shared with every other cartesian chart — see ../../lib/chart-series.ts.
-// Re-exported so this module stays the single import site for a chart's builders.
 export { curveConfig, getLoadingData, sliceFrom, sliceToNull };
 
 /** shimmerWindowStops with this repo's withAlpha bound in. */
@@ -148,122 +136,19 @@ export function shimmerWindowStops(center: number, color: string, peak: number) 
   return sharedShimmerWindowStops(center, color, peak, withAlpha);
 }
 
-/**
- * The plotted values for a line, optionally decorated per-datum. Multi-colour
- * lines tint each symbol with the gradient's colour at its own x-position (like
- * the Recharts dots); single-colour lines return raw numbers. `null` entries
- * pass through untouched — they carve the gap a buffer line's two parts leave.
- */
-export type LinePoint =
+type AreaPoint =
   | number
   | null
   | {
-      value: number | null;
-      itemStyle: DotItemStyleOption;
-      emphasis: { itemStyle: DotItemStyleOption };
+      value: number;
+      itemStyle: Record<string, unknown>;
+      emphasis: { itemStyle: Record<string, unknown> };
     };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Glow overlay
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Builds the stacked glow overlay series for one `<Line glowing>`.
- *
- * Each copy is silent, tooltip-less, and z-ordered beneath the real line.
- * `selectionDim` fades the whole glow with its parent when another series is
- * selected; the emphasis/blur styles let it focus/dim WITH its parent under
- * enableHoverHighlight (the component dispatch-links these ids).
- */
-export function buildGlowSeries(params: {
-  key: string;
-  paint: string | echarts.graphic.LinearGradient;
-  slots: string[];
-  values: (number | null)[];
-  curve: { smooth: boolean; step: "middle" | false };
-  connectNulls: boolean;
-  z: number;
-  selectionDim: number;
-  dotSize: number;
-}): LineSeriesOption[] {
-  const { key, paint, slots, values, curve, connectNulls, z, selectionDim, dotSize } =
-    params;
-  const multiColor = slots.length > 1;
-  const base = slots[0] ?? FALLBACK_SERIES_COLOR;
-  const showDots = dotSize > 0;
-
-  return GLOW_LAYERS.map((layer, i): LineSeriesOption => {
-    const glowOpacity = layer.opacity * selectionDim;
-    const blurOpacity = glowOpacity * 0.3;
-    // Per-datum halo colours so a gradient glow tints each dot at its own
-    // x-position, matching sampleGradient on the real dots.
-    const glowData: LinePoint[] =
-      !multiColor || !showDots
-        ? values
-        : values.map((value, idx): LinePoint => {
-            if (value === null) return null;
-            const t = values.length > 1 ? idx / (values.length - 1) : 0;
-            const color = sampleGradient(slots, t);
-            return {
-              value,
-              itemStyle: { color, opacity: glowOpacity },
-              emphasis: { itemStyle: { color, opacity: glowOpacity } },
-            };
-          });
-
-    return {
-      id: `__glow-${i}-${key}`,
-      type: "line",
-      data: glowData,
-      smooth: curve.smooth,
-      step: curve.step,
-      connectNulls,
-      silent: true,
-      showSymbol: showDots,
-      symbol: "circle",
-      symbolSize: showDots ? dotSize + layer.symbolPad : 0,
-      tooltip: { show: false },
-      z,
-      lineStyle: {
-        color: paint,
-        width: layer.width,
-        opacity: glowOpacity,
-        // Feathers this layer's edge so the stack reads as one smooth falloff
-        // rather than concentric bands (see GLOW_LAYERS).
-        shadowBlur: layer.blur,
-        // Full-alpha shadow colour: the element's own `opacity` above already
-        // scales its shadow, so pre-dimming here squares the alpha and washes
-        // the halo out.
-        shadowColor: sampleGradient(slots, 0.5),
-        cap: "round",
-        join: "round",
-      },
-      itemStyle: multiColor
-        ? { opacity: glowOpacity }
-        : { color: base, opacity: glowOpacity },
-      emphasis: {
-        focus: "none",
-        scale: false,
-        lineStyle: { opacity: glowOpacity },
-        itemStyle: { opacity: glowOpacity },
-      },
-      blur: {
-        lineStyle: { opacity: blurOpacity },
-        itemStyle: { opacity: blurOpacity },
-      },
-    };
-  });
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Layout + axes
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Grid insets plus the footer band reserved for the brush. ECharts 6 contains
- * axis labels automatically (the legacy `containLabel` flag now only triggers a
- * deprecation warning).
- */
 export function buildChartLayout(ctx: OptionBuildContext): {
   grid: GridComponentOption;
   brushBottom: number;
@@ -271,9 +156,6 @@ export function buildChartLayout(ctx: OptionBuildContext): {
   const { legendSlot, xAxisSlot, showBrush, brushHeight } = ctx;
   const legendTop = legendSlot.present && legendSlot.verticalAlign === "top";
   const legendBottom = legendSlot.present && legendSlot.verticalAlign === "bottom";
-  // Clearance covers the x-axis labels plus the same breathing room the Recharts
-  // twin leaves between them and the brush. An x-axis TITLE renders below the
-  // labels (nameGap), so it needs its own band above the brush frame.
   const brushGap = showBrush ? brushHeight + 30 + (xAxisSlot.label ? 22 : 0) : 0;
 
   return {
@@ -296,7 +178,6 @@ export function buildMainAxes(ctx: OptionBuildContext): {
 
   const axisLabelColor = tokens.mutedForeground;
   const splitLineColor = withAlpha(tokens.border, GRID_LINE_OPACITY);
-  // Gridline grey as an opaque colour — see flattenColor.
   const tickDotColor = flattenColor(splitLineColor, tokens.background);
 
   const xTickFormatter = xAxisSlot.tickFormatter;
@@ -312,13 +193,8 @@ export function buildMainAxes(ctx: OptionBuildContext): {
     nameGap: 30,
     nameTextStyle: { color: axisLabelColor, fontSize: 10 },
     axisLine: { show: false },
-    // Tick DOTS: a near-zero-length tick whose round caps form a true circle,
-    // in the gridline grey (flattened opaque so the caps don't stack).
     axisTick: {
       show: !isLoading && xAxisSlot.present && !xAxisSlot.hideDots,
-      // Category ticks default to the BOUNDARY between categories, which on a
-      // boundaryGap axis drops the dot in the gap instead of under its label. A
-      // no-op here (boundaryGap is false) — set for parity with the bar chart.
       alignWithLabel: true,
       length: 0.5,
       lineStyle: { color: tickDotColor, width: 3, cap: "round" },
@@ -335,9 +211,6 @@ export function buildMainAxes(ctx: OptionBuildContext): {
     },
   };
 
-  // An ECharts axis with `show: false` hides its splitLines too, but Recharts'
-  // <CartesianGrid> draws with or without a visible <YAxis>. Keep the axis on
-  // whenever <Grid/> is present and gate the LABELS on <YAxis/> instead.
   const yAxis: YAxisOption = {
     type: "value",
     show: yAxisSlot.present || showGrid,
@@ -346,15 +219,12 @@ export function buildMainAxes(ctx: OptionBuildContext): {
     nameGap: 38,
     nameTextStyle: { color: axisLabelColor, fontSize: 10 },
     axisLine: { show: false },
-    // No alignWithLabel here: ECharts types it on the CATEGORY axis only, and a
-    // value axis already puts its ticks on the labels.
     axisTick: {
       show: yAxisSlot.present && !isLoading && !yAxisSlot.hideDots,
       length: 0.5,
       lineStyle: { color: tickDotColor, width: 3, cap: "round" },
     },
     splitLine: {
-      // Hidden while loading — the skeleton floats on a clean canvas.
       show: showGrid && !isLoading,
       lineStyle: {
         color: splitLineColor,
@@ -363,8 +233,6 @@ export function buildMainAxes(ctx: OptionBuildContext): {
       },
     },
     axisLabel: {
-      // Hidden while loading — skeleton values are meaningless, and the
-      // Recharts YAxis unmounts during loading too.
       show: yAxisSlot.present && !isLoading,
       color: axisLabelColor,
       fontSize: 10,
@@ -382,11 +250,6 @@ export function buildMainAxes(ctx: OptionBuildContext): {
 // Tooltip
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Tooltip HTML builder, closed over the build context. `trigger: "axis"` hands
- * the formatter every series' value at the hovered x; buffer overlays and the
- * mini/loading series are folded out here.
- */
 export function createTooltipFormatter(ctx: OptionBuildContext) {
   const { config, selectedDataKey, tooltipSlot, getHoveredKey } = ctx;
 
@@ -395,14 +258,8 @@ export function createTooltipFormatter(ctx: OptionBuildContext) {
     if (!rows.length) return "";
 
     const first = rows[0] as { axisValue?: string | number; name?: string };
-    // Label shows the RAW axis value — matches ChartTooltipContent.
-    const axisValue = first.axisValue ?? first.name ?? "";
-    const label = String(axisValue);
+    const label = String(first.axisValue ?? first.name ?? "");
 
-    // Dedupe by effective key: a buffer line contributes both its solid part
-    // (id=key) and its dashed overlay (id=`__buffer-{key}`) at the shared
-    // second-to-last point. Keep the first non-null value seen per key so the
-    // final point (only the overlay has data there) still shows its number.
     const seen = new Set<string>();
     const body = rows
       .map((param) => {
@@ -412,17 +269,15 @@ export function createTooltipFormatter(ctx: OptionBuildContext) {
           value?: number | string | null;
         };
         const rawId = String(p.seriesId ?? "");
-        // Map the dashed buffer overlay back onto its series; drop every other
-        // internal series (mini chart, loading skeleton, reveal base).
+        // `__bufferfill-` does NOT match `__buffer-` (the char after "buffer"
+        // differs), so it falls through to the generic `__` drop. Intentional:
+        // the fill patch carries no distinct value to show.
         const key = rawId.startsWith(BUFFER_PREFIX)
           ? rawId.slice(BUFFER_PREFIX.length)
           : rawId.startsWith("__")
             ? ""
             : (p.seriesId ?? p.seriesName ?? "");
         if (!key) return "";
-        // A null value means this series does not reach the hovered x (a buffer
-        // line's solid part stops before the last point) — skip it, and let the
-        // overlay row for the same key stand in.
         if (p.value === null || p.value === undefined) return "";
         if (seen.has(key)) return "";
         seen.add(key);
@@ -479,12 +334,6 @@ export function buildTooltipOption(ctx: OptionBuildContext): TooltipComponentOpt
 // Brush
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * The evil-brush "line" look, canvas-style: a real mini chart of the full data
- * (strokes only, no fill) in a second grid, with a transparent slider dataZoom
- * laid over it. Both zoom entries target only the MAIN x-axis, so the mini
- * chart never filters itself.
- */
 export function buildBrushOption(
   ctx: OptionBuildContext,
   brushBottom: number,
@@ -495,7 +344,8 @@ export function buildBrushOption(
   miniSeries: LineSeriesOption[];
   dataZoom: DataZoomComponentOption[];
 } {
-  const { data, lines, curveType, selectedDataKey, brushHeight, categories } = ctx;
+  const { data, areas, curveType, isStacked, selectedDataKey, brushHeight, categories } =
+    ctx;
   const { tokens } = ctx.resolved;
 
   const miniGrid: GridComponentOption = {
@@ -503,8 +353,6 @@ export function buildBrushOption(
     right: 8,
     bottom: brushBottom,
     height: brushHeight,
-    // No visible axes here — opt out of label containment so the mini chart
-    // spans the full brush frame.
     outerBoundsMode: "none",
   };
 
@@ -519,13 +367,11 @@ export function buildBrushOption(
 
   const miniYAxis: YAxisOption = { type: "value", gridIndex: 1, show: false };
 
-  const miniSeries: LineSeriesOption[] = lines.map((line) => {
-    const key = line.dataKey;
+  const miniSeries: LineSeriesOption[] = areas.map((area) => {
+    const key = area.dataKey;
     const base = (ctx.resolved.series[key] ?? [])[0] ?? FALLBACK_SERIES_COLOR;
-    const curve = curveConfig(line.curveType ?? curveType);
-    // The mini chart mirrors the click selection: unselected series recede by
-    // the same ratio as the main plot.
-    const strokeDim = getOpacity(selectedDataKey, key).stroke;
+    const curve = curveConfig(area.curveType ?? curveType);
+    const { stroke: strokeDim, fill: fillDim } = getOpacity(selectedDataKey, key);
 
     return {
       id: `__mini-${key}`,
@@ -533,9 +379,12 @@ export function buildBrushOption(
       xAxisIndex: 1,
       yAxisIndex: 1,
       data: data.map((row) => Number(row[key]) || 0),
+      // Its OWN mirror stack. A second series in "total" would double every
+      // key's contribution in the main plot.
+      stack: isStacked ? "__mini-total" : undefined,
       smooth: curve.smooth,
       step: curve.step,
-      connectNulls: line.connectNulls,
+      connectNulls: area.connectNulls,
       silent: true,
       showSymbol: false,
       emphasis: { disabled: true },
@@ -544,6 +393,12 @@ export function buildBrushOption(
         color: base,
         width: 1,
         opacity: BRUSH_STROKE_OPACITY * strokeDim,
+      },
+      areaStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: withAlpha(base, BRUSH_FILL_OPACITY * fillDim) },
+          { offset: 1, color: withAlpha(base, 0) },
+        ]),
       },
       z: 0,
     };
@@ -564,9 +419,9 @@ export function buildBrushOption(
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * ONE grey wave regardless of declared lines (Recharts parity: its skeleton is
- * a single stroke-only LoadingLine), swept by the shimmer rAF. No fill: a
- * `<Line>` has no area, so the skeleton is stroke-only too.
+ * ONE grey wave regardless of declared areas (Recharts parity: its skeleton is
+ * a single LoadingArea), swept by the shimmer rAF. Unlike the line chart's, this
+ * one carries a fill.
  */
 export function buildLoadingOption(
   ctx: OptionBuildContext,
@@ -592,6 +447,7 @@ export function buildLoadingOption(
         silent: true,
         // Invisible until the first shimmer tick positions the clip window.
         lineStyle: { color: withAlpha(tokens.foreground, 0), width: 1 },
+        areaStyle: { color: withAlpha(tokens.foreground, 0) },
         z: 1,
       },
     ],
@@ -599,15 +455,18 @@ export function buildLoadingOption(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Line series — the core builder
+// Area series — the core builder
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function buildLineSeries(ctx: OptionBuildContext): LineSeriesOption[] {
+export function buildAreaSeries(ctx: OptionBuildContext): LineSeriesOption[] {
   const {
     data,
     config,
-    lines,
+    areas,
+    seriesKeys,
     curveType,
+    isStacked,
+    isExpanded,
     selectedDataKey,
     hasSelection,
     enableHoverHighlight,
@@ -617,40 +476,41 @@ export function buildLineSeries(ctx: OptionBuildContext): LineSeriesOption[] {
     resolved,
     rendererSize,
   } = ctx;
-  const background = resolved.tokens.background;
 
-  return lines.flatMap((line): LineSeriesOption[] => {
-    const key = line.dataKey;
+  // Optional per-row normalisation for the expanded (100%) stack.
+  const rowTotals = isExpanded
+    ? data.map((row) => seriesKeys.reduce((sum, key) => sum + (Number(row[key]) || 0), 0))
+    : [];
+
+  return areas.flatMap((area): LineSeriesOption[] => {
+    const key = area.dataKey;
     const slots = resolved.series[key] ?? [FALLBACK_SERIES_COLOR];
     const paint = seriesPaint(slots);
     const isSelected = selectedDataKey === key;
+    const showUnselected = hasSelection && !isSelected;
     const opacity = getOpacity(selectedDataKey, key);
-    const curve = curveConfig(line.curveType ?? curveType);
-    const multiColor = slots.length > 1;
+    const curve = curveConfig(area.curveType ?? curveType);
 
-    const restingDot = dotStyle(line.dotVariant, paint, background);
-    const activeDot = dotStyle(line.activeDotVariant, paint, background);
-    const restingVisible = line.dotVariant !== "none";
-    const dotOpacity = opacity.dot;
-
-    const values = data.map((row) => Number(row[key]) || 0);
+    const values = data.map((row, i) => {
+      const value = Number(row[key]) || 0;
+      if (!isExpanded) return value;
+      const total = rowTotals[i];
+      return total ? value / total : 0;
+    });
     const n = values.length;
-    // Hover-reveal is a root-level mode and owns the whole line rendering, so it
-    // takes precedence over a per-line buffer tail (and the glow overlay).
     const reveal = enableHoverReveal;
-    const buffer = !reveal && line.enableBufferLine && n >= 2;
+    const buffer = !reveal && area.enableBufferLine && n >= 2;
     const revealActive = reveal && revealIndex !== null;
 
-    // The dash pattern for the MAIN line. A buffer line keeps its body solid and
-    // dashes only the tail overlay, so its main part is always solid regardless
-    // of strokeVariant (matches the Recharts twin).
-    const mainDash: "solid" | [number, number] =
-      buffer || line.strokeVariant === "solid" ? "solid" : [3, 3];
+    const restingDot = dotStyle(area.dotVariant, paint, resolved.tokens.background);
+    const activeDot = dotStyle(area.activeDotVariant, paint, resolved.tokens.background);
+    const restingVisible = area.dotVariant !== "none";
+    const dotOpacity = opacity.dot;
+    const multiColor = slots.length > 1;
 
     // The reveal truncates the line to the cursor, which would COMPRESS a
     // bbox-relative stroke gradient into the shorter span — misaligning it from
-    // the index-sampled dots. Anchor the stroke to the plot in absolute pixels
-    // so every x keeps its own colour even when the line stops short.
+    // the plot-anchored fill texture and the index-sampled dots.
     const strokePaint =
       reveal && multiColor
         ? new echarts.graphic.LinearGradient(
@@ -663,13 +523,10 @@ export function buildLineSeries(ctx: OptionBuildContext): LineSeriesOption[] {
           )
         : paint;
 
-    // Turn a value list into ECharts data — attaching per-datum symbol colours
-    // for multi-colour lines, and passing `null` gaps through so a buffer line's
-    // two parts each draw only their own segment.
-    const toPoints = (vals: (number | null)[]): LinePoint[] =>
+    const toPoints = (vals: (number | null)[]): AreaPoint[] =>
       !multiColor
         ? vals
-        : vals.map((value, i): LinePoint => {
+        : vals.map((value, i): AreaPoint => {
             if (value === null) return null;
             const t = vals.length > 1 ? i / (vals.length - 1) : 0;
             const pointColor = sampleGradient(slots, t);
@@ -677,18 +534,18 @@ export function buildLineSeries(ctx: OptionBuildContext): LineSeriesOption[] {
               value,
               itemStyle: {
                 ...dotItemStyle(
-                  restingVisible ? line.dotVariant : line.activeDotVariant,
+                  restingVisible ? area.dotVariant : area.activeDotVariant,
                   pointColor,
-                  background,
+                  resolved.tokens.background,
                 ),
                 opacity: dotOpacity,
               },
               emphasis: {
                 itemStyle: {
                   ...dotItemStyle(
-                    line.activeDotVariant === "none" ? "default" : line.activeDotVariant,
+                    area.activeDotVariant === "none" ? "default" : area.activeDotVariant,
                     pointColor,
-                    background,
+                    resolved.tokens.background,
                   ),
                   opacity: 1,
                 },
@@ -696,61 +553,38 @@ export function buildLineSeries(ctx: OptionBuildContext): LineSeriesOption[] {
             };
           });
 
-    // Snapshot the FULL per-datum points so the reveal hover handler can slice
-    // them without losing each dot's sampled gradient colour — plain values
-    // would fall back to the default palette.
     if (reveal) revealSink[key] = toPoints(values);
 
-    // Buffer line: the solid MAIN part drops the last point (its final segment
-    // becomes the dashed overlay). Reveal instead TRUNCATES the real series at
-    // the cursor's x-index, so its line stops there and the muted base shows
-    // through past it. When idle the real series carries its full data.
     const mainValues: (number | null)[] = buffer
       ? values.map((v, i) => (i === n - 1 ? null : v))
       : revealActive
         ? sliceToNull(values, revealIndex as number)
         : values;
 
-    const z = isSelected ? 3 : hasSelection ? 1 : 2;
+    const mainDash: "solid" | [number, number] =
+      buffer || area.strokeVariant === "solid" ? "solid" : ([3, 3] as [number, number]);
 
-    // Glow overlays sit UNDER the real line (built first, same z; equal-z series
-    // paint in array order). They follow the FULL solid path so the halo stays
-    // continuous even beneath a dashed or buffer tail. Suppressed under reveal:
-    // a full-length coloured halo would bleed past the cursor and defeat the mute.
-    const glowSeries =
-      line.glowing && !reveal
-        ? buildGlowSeries({
-            key,
-            paint,
-            slots,
-            values,
-            curve,
-            connectNulls: line.connectNulls,
-            z,
-            selectionDim: opacity.stroke,
-            dotSize: restingVisible ? restingDot.size : 0,
-          })
-        : [];
+    const z = isSelected ? 3 : hasSelection ? 1 : 2;
 
     const mainSeries: LineSeriesOption = {
       id: key,
       name: typeof config[key]?.label === "string" ? config[key]?.label : key,
       type: "line",
       data: toPoints(mainValues),
+      stack: isStacked ? "total" : undefined,
       smooth: curve.smooth,
       step: curve.step,
-      connectNulls: line.connectNulls,
-      cursor: line.isClickable ? "pointer" : "default",
-      // By default ECharts only fires mouse events on the symbols — this makes
-      // the line itself clickable too, like the Recharts <Line>.
-      triggerEvent: line.isClickable,
+      connectNulls: area.connectNulls,
+      cursor: area.isClickable ? "pointer" : "default",
+      // Makes the line AND the filled polygon clickable, like Recharts' <Area>.
+      triggerEvent: area.isClickable,
       showSymbol: restingVisible,
       symbol: "circle",
       symbolSize: restingVisible ? restingDot.size : activeDot.size,
       z,
       lineStyle: {
         color: strokePaint,
-        width: line.strokeWidth,
+        width: area.strokeWidth,
         opacity: opacity.stroke,
         type: mainDash,
         dashOffset: 0,
@@ -761,37 +595,33 @@ export function buildLineSeries(ctx: OptionBuildContext): LineSeriesOption[] {
             ...(restingVisible ? restingDot.itemStyle : activeDot.itemStyle),
             opacity: dotOpacity,
           },
+      areaStyle: {
+        color: fillPaint(area.variant, showUnselected, slots, rendererSize),
+        opacity: opacity.fill,
+      },
       emphasis: {
-        // focus "series" blurs every other series in this grid while one is
-        // hovered — the hover twin of the click selection. Suppressed entirely
-        // while a series is click-selected: the selection dim owns the canvas.
-        // Reveal owns the hover visual, so native focus-blur stands down when it
-        // is on (they must not blend).
         focus:
           enableHoverHighlight && !enableHoverReveal && !hasSelection ? "series" : "none",
         scale: restingVisible ? activeDot.size / Math.max(restingDot.size, 1) : 1,
         ...(multiColor ? {} : { itemStyle: { ...activeDot.itemStyle, opacity: 1 } }),
       },
-      // Blur styling mirrors the click-selection dim; inert unless a series is
-      // focused via enableHoverHighlight.
       blur: {
         lineStyle: { opacity: 0.3 },
+        areaStyle: { opacity: 0.1 },
         itemStyle: { opacity: 0.3 },
       },
     };
 
-    // Hover-reveal: a muted grey BASE line of the FULL series sits one z below
-    // the real one. Invisible while idle (opacity 0 → the chart looks normal),
-    // fading in only while hovering, so the region PAST the cursor shows as
-    // neutral grey. Lines have no fill, so the base is a line only.
     if (reveal) {
       const muted = resolved.tokens.mutedForeground;
       const revealBase: LineSeriesOption = {
         id: `${REVEAL_PREFIX}${key}`,
         type: "line",
-        // Only the region FROM the cursor onward, so the grey never sits under
-        // the coloured part — the two meet exactly at the pointer.
         data: revealActive ? sliceFrom(values, revealIndex as number) : values,
+        // Its OWN stack, not "total" — a second series in the real stack would
+        // double every key's contribution and break the geometry. This mirror
+        // stack reproduces the same cumulative shape in a separate layer.
+        stack: isStacked ? "__reveal-total" : undefined,
         smooth: curve.smooth,
         step: curve.step,
         connectNulls: false,
@@ -799,9 +629,10 @@ export function buildLineSeries(ctx: OptionBuildContext): LineSeriesOption[] {
         showSymbol: false,
         symbol: "circle",
         z: z - 1,
+        // Neutral grey, NO fill, SAME dash pattern as the coloured line.
         lineStyle: {
           color: muted,
-          width: line.strokeWidth,
+          width: area.strokeWidth,
           type: mainDash,
           opacity: revealActive ? 0.3 : 0,
         },
@@ -812,16 +643,16 @@ export function buildLineSeries(ctx: OptionBuildContext): LineSeriesOption[] {
       return [revealBase, mainSeries];
     }
 
-    if (!buffer) return [...glowSeries, mainSeries];
+    if (!buffer) return [mainSeries];
 
-    // Dashed forecast overlay — draws ONLY the last segment. Silent, so it never
-    // intercepts clicks/hover; it still feeds the axis tooltip (silent series are
-    // aggregated by axis), which is why the last point keeps its number.
     const bufferValues: (number | null)[] = values.map((v, i) => (i >= n - 2 ? v : null));
+
     const bufferSeries: LineSeriesOption = {
       id: `${BUFFER_PREFIX}${key}`,
       type: "line",
       data: toPoints(bufferValues),
+      // Own mirror stack — same reasoning as the reveal base.
+      stack: isStacked ? "__buffer-total" : undefined,
       smooth: curve.smooth,
       step: curve.step,
       connectNulls: true,
@@ -832,7 +663,7 @@ export function buildLineSeries(ctx: OptionBuildContext): LineSeriesOption[] {
       z,
       lineStyle: {
         color: paint,
-        width: line.strokeWidth,
+        width: area.strokeWidth,
         opacity: opacity.stroke,
         type: BUFFER_DASH,
       },
@@ -842,9 +673,6 @@ export function buildLineSeries(ctx: OptionBuildContext): LineSeriesOption[] {
             ...(restingVisible ? restingDot.itemStyle : activeDot.itemStyle),
             opacity: dotOpacity,
           },
-      // The dashed tail is a separate silent series, so focus:"series" on its
-      // parent would blur it apart from the line it belongs to. The component
-      // dispatch-links this id so it focuses WITH its parent.
       emphasis: {
         focus: "none",
         scale: false,
@@ -854,6 +682,111 @@ export function buildLineSeries(ctx: OptionBuildContext): LineSeriesOption[] {
       blur: { lineStyle: { opacity: 0.3 }, itemStyle: { opacity: 0.3 } },
     };
 
-    return [...glowSeries, mainSeries, bufferSeries];
+    /**
+     * Fill patch. The main area drops its last point so the tail stroke can be
+     * the dashed overlay — which also removes the FILL under that segment. This
+     * fill-only layer (no stroke, no dots) puts it back, so the area reads as
+     * full beneath the dashed tail.
+     */
+    const bufferFillSeries: LineSeriesOption = {
+      id: `${BUFFERFILL_PREFIX}${key}`,
+      type: "line",
+      data: toPoints(bufferValues),
+      stack: isStacked ? "__bufferfill-total" : undefined,
+      smooth: curve.smooth,
+      step: curve.step,
+      connectNulls: true,
+      silent: true,
+      showSymbol: false,
+      z: z - 1,
+      lineStyle: { opacity: 0 },
+      areaStyle: {
+        color: fillPaint(area.variant, showUnselected, slots, rendererSize),
+        opacity: opacity.fill,
+      },
+      emphasis: { disabled: true },
+      blur: { areaStyle: { opacity: 0.1 } },
+      tooltip: { show: false },
+    };
+
+    return [mainSeries, bufferSeries, bufferFillSeries];
   });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pointer hit-testing
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Each series' PLOTTED top value per index — the cumulative height under a
+ * stack, the raw value otherwise. Feeds resolveAreaAtPixel.
+ */
+export function computePlottedTops(ctx: OptionBuildContext): Record<string, number[]> {
+  const { data, areas, seriesKeys, isStacked, isExpanded } = ctx;
+  const rowTotals = isExpanded
+    ? data.map((row) => seriesKeys.reduce((sum, key) => sum + (Number(row[key]) || 0), 0))
+    : [];
+  const running: number[] = new Array(data.length).fill(0);
+  const tops: Record<string, number[]> = {};
+
+  for (const area of areas) {
+    const key = area.dataKey;
+    tops[key] = data.map((row, i) => {
+      let value = Number(row[key]) || 0;
+      if (isExpanded) value = rowTotals[i] ? value / (rowTotals[i] as number) : 0;
+      if (!isStacked) return value;
+      running[i] = (running[i] ?? 0) + value;
+      return running[i] as number;
+    });
+  }
+  return tops;
+}
+
+/**
+ * Resolves which area the pointer is visually inside.
+ *
+ * Overlapping area polygons all contain the same pixel, so ECharts' native hit
+ * test lands on whichever series drew topmost — not the band the user SEES.
+ * A plotted line within grab distance wins outright; otherwise the point
+ * belongs to the nearest line ABOVE it (the boundary of the band it is inside).
+ *
+ * Returns null when the pointer is outside the grid, above every line, or when
+ * there is only one series (nothing to disambiguate).
+ */
+export function resolveAreaAtPixel(
+  chart: EChartsInstance,
+  tops: Record<string, number[]>,
+  keys: string[],
+  x: number,
+  y: number,
+): string | null {
+  if (keys.length < 2) return null;
+  if (!chart.containPixel({ gridIndex: 0 }, [x, y])) return null;
+  const [rawIndex] = chart.convertFromPixel({ gridIndex: 0 }, [x, y]);
+  const index = Math.round(rawIndex ?? 0);
+
+  let nearest: string | null = null;
+  let nearestDist = Infinity;
+  let above: string | null = null;
+  let abovePixelY = -Infinity;
+
+  for (const key of keys) {
+    const value = tops[key]?.[index];
+    if (value === undefined) continue;
+    const pixelY = chart.convertToPixel({ gridIndex: 0 }, [index, value])[1];
+    if (pixelY === undefined) continue;
+    const dist = Math.abs(pixelY - y);
+    if (dist < nearestDist) {
+      nearestDist = dist;
+      nearest = key;
+    }
+    // Pixel y grows downward: a line above the pointer has the larger pixelY
+    // among those ≤ the pointer's.
+    if (pixelY <= y && pixelY > abovePixelY) {
+      abovePixelY = pixelY;
+      above = key;
+    }
+  }
+
+  return nearestDist <= 10 ? nearest : above;
 }

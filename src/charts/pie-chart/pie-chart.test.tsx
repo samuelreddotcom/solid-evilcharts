@@ -2,7 +2,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { render } from "solid-js/web";
 import { createSignal, type JSX } from "solid-js";
 
-import { BACKGROUND_PATTERNS } from "./background";
+import { BACKGROUND_PATTERNS } from "../../lib/chart-background";
 import {
   buildLoadingOption,
   buildPieSeries,

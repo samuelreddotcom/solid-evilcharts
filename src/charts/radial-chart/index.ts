@@ -1,14 +1,12 @@
-export { EChartsPieChart } from "./pie-chart";
+export { EChartsRadialChart } from "./radial-chart";
 export { collectConfig } from "./parts";
-export { BACKGROUND_PATTERNS, BackgroundLayer } from "../../lib/chart-background";
 export type {
   BackgroundVariant,
   ChartConfig,
-  EChartsPieChartProps,
+  EChartsRadialChartProps,
   EChartsRenderer,
-  LabelPosition,
   LegendVariant,
-  PieVariant,
+  RadialVariant,
   TooltipPosition,
   TooltipRoundness,
   TooltipVariant,

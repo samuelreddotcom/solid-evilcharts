@@ -10,6 +10,7 @@
  */
 import type { JSX } from "solid-js";
 
+import type { BackgroundVariant } from "../../lib/chart-background";
 import type { ChartConfig } from "../../lib/chart-tokens";
 import type { LegendVariant } from "../../lib/echarts-legend";
 import type { EChartsRenderer } from "../../lib/echarts-paint";
@@ -20,6 +21,7 @@ import type {
 } from "../../lib/echarts-tooltip";
 
 export type {
+  BackgroundVariant,
   ChartConfig,
   EChartsRenderer,
   LegendVariant,
@@ -102,19 +104,6 @@ export type PieVariant = "gradient";
  * moves the sector's name past the rim with a leader line.
  */
 export type LabelPosition = "inside" | "outside";
-
-export type BackgroundVariant =
-  | "dots"
-  | "grid"
-  | "cross-hatch"
-  | "diagonal-lines"
-  | "plus"
-  | "falling-triangles"
-  | "4-pointed-star"
-  | "tiny-checkers"
-  | "overlapping-circles"
-  | "wiggle-lines"
-  | "bubbles";
 
 export interface EChartsPieChartProps<TData extends Record<string, unknown>> {
   /** Rows rendered by the chart — one sector each. */

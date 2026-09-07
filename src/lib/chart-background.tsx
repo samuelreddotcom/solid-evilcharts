@@ -1,6 +1,6 @@
 /**
  * Decorative SVG background patterns, drawn BEHIND the transparent ECharts
- * canvas.
+ * canvas. Shared by the pie and radial charts.
  *
  * The Recharts twin renders its pattern in SVG, so this port does the same
  * rather than trying to bake it into the canvas: an SVG layer keeps the patterns
@@ -16,7 +16,23 @@
  */
 import { type Component, type JSX } from "solid-js";
 
-import type { BackgroundVariant } from "./types";
+/**
+ * Shared by the pie and radial charts. Lives in lib/ rather than beside either
+ * of them because both draw the identical pattern set — duplicating 11 SVG
+ * components across two charts is exactly the drift this project keeps avoiding.
+ */
+export type BackgroundVariant =
+  | "dots"
+  | "grid"
+  | "cross-hatch"
+  | "diagonal-lines"
+  | "plus"
+  | "falling-triangles"
+  | "4-pointed-star"
+  | "tiny-checkers"
+  | "overlapping-circles"
+  | "wiggle-lines"
+  | "bubbles";
 
 type PatternProps = { id: string };
 

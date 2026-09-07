@@ -1,14 +1,12 @@
 /**
- * Apache ECharts pie chart for Solid.
+ * Apache ECharts radial chart for Solid.
  *
- * Ported from EvilCharts `src/registry/charts/echarts-pie-chart.tsx` (MIT). See
- * ../line-chart/line-chart.tsx for the shared React → Solid notes.
+ * Ported from EvilCharts `src/registry/charts/echarts-radial-chart.tsx` (MIT).
+ * See ../line-chart/line-chart.tsx for the shared React → Solid notes.
  *
- * The first non-cartesian chart, and much smaller than the cartesian ones: no
- * axes, no grid, no brush, no dataZoom, no resize-driven texture rebakes. What
- * it adds is an SVG background layer behind the transparent canvas, and a
- * shimmer that sweeps ANGULARLY around the ring rather than diagonally across a
- * plot.
+ * Polar like the pie, but built on a BAR series over a polar coordinate system
+ * rather than a pie series — so it has real angle and radius axes, and a second
+ * polar carrying nothing but the background track.
  */
 import {
   Show,
@@ -25,23 +23,34 @@ import {
 } from "solid-js";
 import * as echarts from "echarts/core";
 
+import { BackgroundLayer } from "../../lib/chart-background";
 import { buildChartCss, resolveColors, type ResolvedColors } from "../../lib/chart-tokens";
 import { LegendOverlay } from "../../lib/echarts-legend";
 import { DEFAULT_ECHARTS_RENDERER } from "../../lib/echarts-paint";
-import { BackgroundLayer } from "../../lib/chart-background";
 import {
+  buildAngleAxis,
+  buildBarSeries,
   buildLoadingOption,
-  buildPieSeries,
-  buildShimmerSectors,
+  buildPolar,
+  buildRadiusAxis,
   buildTooltipOption,
+  getLoadingData,
+  niceCeil,
+  shimmerWindowStops,
   type EChartsOption,
   type OptionBuildContext,
 } from "./options";
-import { Background, Label, Legend, Pie, Tooltip, collectConfig } from "./parts";
+import { Legend, RadialBar, Tooltip, collectConfig } from "./parts";
 import {
+  DEFAULT_INNER_RADIUS,
+  DEFAULT_OUTER_RADIUS,
   LOADING_ANIMATION_DURATION,
+  LOADING_BARS,
+  LOADING_SERIES_ID,
+  LOADING_SHIMMER_MAX_OPACITY,
+  MAIN_SERIES_ID,
   REVEAL_DURATION,
-  type EChartsPieChartProps,
+  type EChartsRadialChartProps,
 } from "./types";
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
@@ -49,11 +58,9 @@ type EChartsInstance = ReturnType<typeof echarts.init>;
 type LiveState = {
   resolved: ResolvedColors | null;
   hasRevealed: boolean;
-  handlers: {
-    isClickable: boolean;
-    selectedSector: string | null;
-    selectSector: (name: string | null) => void;
-  };
+  loadingRows: number[] | null;
+  categories: string[];
+  handlers: { clickable: boolean };
   repush: () => void;
 };
 
@@ -69,14 +76,16 @@ function createReducedMotion() {
   return reduced;
 }
 
-function EChartsPieChartRoot<TData extends Record<string, unknown>>(
-  rawProps: EChartsPieChartProps<TData>,
+function EChartsRadialChartRoot<TData extends Record<string, unknown>>(
+  rawProps: EChartsRadialChartProps<TData>,
 ): JSX.Element {
   const props = mergeProps(
     {
       renderer: DEFAULT_ECHARTS_RENDERER,
-      animation: true,
-      defaultSelectedSector: null,
+      variant: "full" as const,
+      innerRadius: DEFAULT_INNER_RADIUS,
+      outerRadius: DEFAULT_OUTER_RADIUS,
+      defaultSelectedDataKey: null,
       isLoading: false,
     },
     rawProps,
@@ -92,77 +101,84 @@ function EChartsPieChartRoot<TData extends Record<string, unknown>>(
   const live: LiveState = {
     resolved: null,
     hasRevealed: false,
-    handlers: {
-      isClickable: false,
-      selectedSector: props.defaultSelectedSector,
-      selectSector: () => {},
-    },
+    loadingRows: null,
+    categories: [],
+    handlers: { clickable: false },
     repush: () => {},
   };
 
+  const loadingData = () => (live.loadingRows ??= getLoadingData(LOADING_BARS));
   const reducedMotion = createReducedMotion();
 
-  // Controlled when `selectedSector` is provided; otherwise the internal signal.
-  const [internalSelected, setInternalSelected] = createSignal<string | null>(
-    props.defaultSelectedSector,
+  const [selectedBar, setSelectedBar] = createSignal<string | null>(
+    props.defaultSelectedDataKey,
   );
-  const selectedSector = () =>
-    props.selectedSector !== undefined ? props.selectedSector : internalSelected();
-
   const [chartEpoch, setChartEpoch] = createSignal(0);
 
   const resolvedChildren = children(() => props.children);
   const collected = createMemo(() => collectConfig(resolvedChildren()));
 
-  const pie = () => collected().pie;
+  const radialBar = () => collected().radialBar;
   const tooltipSlot = () => collected().tooltip;
   const legendSlot = () => collected().legend;
-  const backgroundSlot = () => collected().background;
+
+  /** Ring NAMES are the config keys — same convention as the pie's sectors. */
+  const categories = createMemo(() => props.data.map((row) => String(row[props.nameKey])));
+
+  const values = createMemo(() => {
+    const key = radialBar().dataKey;
+    return props.data.map((row) => (key ? Number(row[key]) || 0 : 0));
+  });
 
   /**
-   * Sector NAMES double as the config keys here — unlike the cartesian charts,
-   * where a series key is a column. Every colour var is keyed by sector name.
+   * An explicit `max` pins what a full sweep means (gauges). Otherwise a nice
+   * ceiling over the data, so the largest ring stops just shy of a full wrap.
    */
-  const sectorNames = createMemo(() =>
-    props.data.map((row) => String(row[props.nameKey])),
+  const angleMax = createMemo(() =>
+    props.max != null && props.max > 0
+      ? props.max
+      : niceCeil(Math.max(0, ...values())),
   );
 
   const css = createMemo(() => buildChartCss(chartId, props.config));
-
-  const selectSector = (name: string | null) => {
-    setInternalSelected(name);
-    if (name === null) {
-      props.onSelectionChange?.(null);
-      return;
-    }
-    const item = props.data.find((row) => String(row[props.nameKey]) === name);
-    props.onSelectionChange?.(
-      item ? { dataKey: name, value: Number(item[props.dataKey]) || 0 } : null,
-    );
-  };
+  const hasSelection = () => selectedBar() !== null;
 
   createEffect(() => {
-    live.handlers = {
-      isClickable: pie()?.isClickable ?? false,
-      selectedSector: selectedSector(),
-      selectSector,
-    };
+    live.categories = categories();
+    live.handlers = { clickable: radialBar().isClickable };
   });
+
+  const toggleSelection = (name: string) => {
+    setSelectedBar((prev) => {
+      const next = prev === name ? null : name;
+      if (next === null) {
+        props.onSelectionChange?.(null);
+        return next;
+      }
+      const index = categories().indexOf(next);
+      props.onSelectionChange?.({ dataKey: next, value: values()[index] ?? 0 });
+      return next;
+    });
+  };
 
   const buildOption = (): EChartsOption => {
     const resolved = live.resolved;
     if (!resolved) return {};
 
     const ctx: OptionBuildContext = {
-      data: props.data,
       config: props.config,
-      nameKey: props.nameKey,
-      dataKey: props.dataKey,
-      pie: pie(),
-      selectedSector: selectedSector(),
+      categories: categories(),
+      values: values(),
+      radialBar: radialBar(),
+      variant: props.variant,
+      innerRadius: props.innerRadius,
+      outerRadius: props.outerRadius,
+      angleMax: angleMax(),
+      selectedBar: selectedBar(),
+      hasSelection: hasSelection(),
       tooltipSlot: tooltipSlot(),
-      legendSlot: legendSlot(),
       isLoading: props.isLoading,
+      loadingData,
       resolved,
     };
 
@@ -170,8 +186,11 @@ function EChartsPieChartRoot<TData extends Record<string, unknown>>(
 
     return {
       animation: false,
+      polar: buildPolar(ctx),
+      angleAxis: buildAngleAxis(ctx),
+      radiusAxis: buildRadiusAxis(ctx),
       tooltip: buildTooltipOption(ctx),
-      series: buildPieSeries(ctx),
+      series: buildBarSeries(ctx),
     };
   };
 
@@ -204,16 +223,17 @@ function EChartsPieChartRoot<TData extends Record<string, unknown>>(
         });
 
         chart.on("click", (params) => {
-          const { isClickable, selectedSector: selected, selectSector: select } =
-            live.handlers;
-          if (!isClickable) return;
-          const p = params as { name?: string; seriesId?: string };
-          // Ignore the loading skeleton's `__`-prefixed series.
-          if (String(p.seriesId ?? "").startsWith("__")) return;
-          const name = p.name;
-          if (typeof name !== "string") return;
-          // Clicking the selected sector clears the selection.
-          select(selected === name ? null : name);
+          if (!live.handlers.clickable) return;
+          const p = params as {
+            seriesId?: string;
+            dataIndex?: number;
+            componentType?: string;
+          };
+          // Only the main ring series is clickable; track and skeleton are silent.
+          if (p.componentType !== "series" || p.seriesId !== MAIN_SERIES_ID) return;
+          if (typeof p.dataIndex !== "number") return;
+          const name = live.categories[p.dataIndex];
+          if (name != null) toggleSelection(name);
         });
 
         setChartEpoch((epoch) => epoch + 1);
@@ -236,14 +256,15 @@ function EChartsPieChartRoot<TData extends Record<string, unknown>>(
     if (!chart || !containerRef) return;
 
     const config = props.config;
-    const names = sectorNames();
+    const names = categories();
     const isLoading = props.isLoading;
-    const animation = props.animation;
     const reduce = reducedMotion();
     const options = props.chartOptions;
     void collected();
     void props.data;
-    void selectedSector();
+    void selectedBar();
+    void props.variant;
+    void angleMax();
 
     live.resolved = resolveColors(containerRef, config, names);
 
@@ -261,7 +282,7 @@ function EChartsPieChartRoot<TData extends Record<string, unknown>>(
     if (isLoading) live.hasRevealed = false;
     const shouldReveal = !live.hasRevealed && !isLoading;
     if (shouldReveal) live.hasRevealed = true;
-    push(animation && shouldReveal && !reduce);
+    push(shouldReveal && !reduce);
 
     live.repush = () => {
       live.resolved = resolveColors(containerRef, config, names);
@@ -279,45 +300,44 @@ function EChartsPieChartRoot<TData extends Record<string, unknown>>(
     if (!chart || props.isLoading || !slot.present || index == null) return;
 
     const timer = setTimeout(() => {
+      // Series index 0 is the main ring series — buildBarSeries puts it first
+      // precisely so this stays stable whether or not a track is drawn.
       chart.dispatchAction({ type: "showTip", seriesIndex: 0, dataIndex: index });
     }, 300);
     onCleanup(() => clearTimeout(timer));
   });
 
-  // ── Loading shimmer — an ANGULAR sweep around the ring ──────────────────────
+  // ── Loading shimmer — a clip window swept diagonally across the rings ───────
   createEffect(() => {
     chartEpoch();
     const chart = chartInstance;
-    const isLoading = props.isLoading;
-    const slot = pie();
-    if (!chart || !isLoading) return;
-
-    const cornerRadius = slot?.cornerRadius ?? 0;
-    const paddingAngle = slot?.paddingAngle ?? 0;
+    if (!chart || !props.isLoading) return;
 
     let raf = 0;
     const start = performance.now();
     const tick = (now: number) => {
       const phase = ((((now - start) / LOADING_ANIMATION_DURATION) % 1) + 1) % 1;
-      // Read tokens per frame, so a theme flip mid-loading retints the shimmer.
       const foreground = live.resolved?.tokens.foreground ?? "rgba(120, 120, 120, 1)";
-      const background = live.resolved?.tokens.background ?? "rgba(120, 120, 120, 1)";
-
+      const w = chart.getWidth();
+      const h = chart.getHeight();
+      if (!w || !h) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      const maxT = (w + h) / (2 * w);
+      const center = phase * (maxT + 2 * 0.2) - 0.2;
+      // ABSOLUTE pixel coordinates: the rings all share one sweep, so the window
+      // has to sit at the same place on the canvas for every one of them.
+      const clip = new echarts.graphic.LinearGradient(
+        0,
+        0,
+        w,
+        w,
+        shimmerWindowStops(center, foreground, LOADING_SHIMMER_MAX_OPACITY),
+        true,
+      );
       chart.setOption(
-        {
-          series: [
-            {
-              id: "__loading",
-              data: buildShimmerSectors({
-                phase,
-                foreground,
-                background,
-                cornerRadius,
-                paddingAngle,
-              }),
-            },
-          ],
-        },
+        { series: [{ id: LOADING_SERIES_ID, itemStyle: { color: clip } }] },
         { silent: true, lazyUpdate: true },
       );
       raf = requestAnimationFrame(tick);
@@ -347,8 +367,8 @@ function EChartsPieChartRoot<TData extends Record<string, unknown>>(
     >
       <style innerHTML={css()} />
 
-      <Show when={backgroundSlot().present}>
-        <BackgroundLayer variant={backgroundSlot().variant} baseId={baseId} />
+      <Show when={props.backgroundVariant}>
+        {(variant) => <BackgroundLayer variant={variant()} baseId={baseId} />}
       </Show>
 
       <div class="relative min-h-0 w-full flex-1">
@@ -357,15 +377,15 @@ function EChartsPieChartRoot<TData extends Record<string, unknown>>(
 
       <Show when={legendSlot().present && !props.isLoading}>
         <LegendOverlay
-          seriesKeys={sectorNames()}
+          seriesKeys={categories()}
           config={props.config}
           variant={legendSlot().variant}
           align={legendSlot().align}
           verticalAlign={legendSlot().verticalAlign}
-          selectedKey={selectedSector()}
+          selectedKey={selectedBar()}
           hoveredKey={null}
           isClickable={legendSlot().isClickable}
-          onToggle={(key) => selectSector(selectedSector() === key ? null : key)}
+          onToggle={toggleSelection}
           style={legendStyle()}
         />
       </Show>
@@ -387,10 +407,8 @@ function EChartsPieChartRoot<TData extends Record<string, unknown>>(
 }
 
 /** Compound API — every part hangs off the root as a static member. */
-export const EChartsPieChart = Object.assign(EChartsPieChartRoot, {
-  Pie,
-  Label,
+export const EChartsRadialChart = Object.assign(EChartsRadialChartRoot, {
+  RadialBar,
   Tooltip,
   Legend,
-  Background,
 });

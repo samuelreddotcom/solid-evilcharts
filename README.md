@@ -25,8 +25,8 @@ plan and current phase.
 | 2 | Tokens + vendored UI primitives | ✅ done |
 | 3 | Engine-neutral core | ✅ done |
 | 4 | Shared primitives (dot, tooltip, legend, brush) | ✅ done |
-| 5 | Line chart | 👈 next |
-| 6 | Area chart → ship `0.1.0` | |
+| 5 | Line chart | ✅ done |
+| 6 | Area chart → ship `0.1.0` | 👈 next |
 | 7 | Remaining 6 charts | |
 | 8 | Registry / distribution | |
 | 9 | Docs site | |

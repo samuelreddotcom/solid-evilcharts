@@ -23,8 +23,8 @@ plan and current phase.
 | 0 | Spike the config-as-children pattern | ✅ done — 11/11 gates |
 | 1 | Repo scaffold | ✅ done |
 | 2 | Tokens + vendored UI primitives | ✅ done |
-| 3 | Engine-neutral core | 👈 next |
-| 4 | Shared primitives (dot, tooltip, legend, brush) | |
+| 3 | Engine-neutral core | ✅ done |
+| 4 | Shared primitives (dot, tooltip, legend, brush) | 👈 next |
 | 5 | Line chart | |
 | 6 | Area chart → ship `0.1.0` | |
 | 7 | Remaining 6 charts | |

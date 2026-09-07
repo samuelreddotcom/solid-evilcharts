@@ -31,6 +31,19 @@ if (!("IntersectionObserver" in globalThis)) {
     IntersectionObserverStub as unknown as typeof IntersectionObserver;
 }
 
+// jsdom has no canvas implementation, and its getContext() throws a noisy
+// "Not implemented" error rather than returning null. normalizeColor() already
+// handles a null context by returning its input untouched, so hand it null
+// directly and keep the output readable.
+//
+// Phase 5 note: ECharts' canvas renderer will need a real context. Either
+// install the `canvas` package then, or drive chart tests through the SVG
+// renderer, which needs no context at all.
+if (typeof HTMLCanvasElement !== "undefined") {
+  HTMLCanvasElement.prototype.getContext = (() =>
+    null) as typeof HTMLCanvasElement.prototype.getContext;
+}
+
 if (!globalThis.matchMedia) {
   // Charts read prefers-reduced-motion; components read breakpoints.
   globalThis.matchMedia = ((query: string) => ({

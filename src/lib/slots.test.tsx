@@ -6,8 +6,80 @@ import {
   createSignal,
   For,
   Show,
+  type JSX,
 } from "solid-js";
-import { Area, Dot, ActiveDot, Grid, XAxis, parseSlots, SLOT, isSlot } from "./markers";
+import {
+  SLOT,
+  createMarker,
+  filterSlots,
+  findSlot,
+  isSlot,
+  slotProps,
+  slotsOf,
+} from "./slots";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fixtures.
+//
+// These stand in for a real chart's markers. Each chart owns its own set, so
+// they are defined here rather than shipped from lib/ — nothing in the library
+// should export an `Area` that isn't attached to an actual chart.
+// ─────────────────────────────────────────────────────────────────────────────
+
+type DotProps = { variant?: string };
+type AreaProps = { dataKey: string; variant?: string; children?: JSX.Element };
+type XAxisProps = { dataKey: string; tickFormatter?: (v: string) => string };
+
+const Dot = createMarker<"dot", DotProps>("dot");
+const ActiveDot = createMarker<"activeDot", DotProps>("activeDot");
+const Area = createMarker<"area", AreaProps>("area");
+const XAxis = createMarker<"xAxis", XAxisProps>("xAxis");
+const Grid = createMarker<"grid", Record<string, never>>("grid");
+
+type ParsedArea = {
+  dataKey: string;
+  variant: string;
+  dotVariant: string;
+  activeDotVariant: string;
+};
+
+type Parsed = {
+  areas: ParsedArea[];
+  xAxis: { dataKey: string; tickFormatter?: (v: string) => string } | null;
+  showGrid: boolean;
+};
+
+function parseSlots(resolved: unknown): Parsed {
+  const slots = slotsOf(resolved);
+  const out: Parsed = { areas: [], xAxis: null, showGrid: false };
+
+  for (const area of filterSlots(slots, "area")) {
+    const props = slotProps<AreaProps>(area);
+    // Area renders nothing, so Solid never resolved its children — reaching
+    // them is the parser's job.
+    const nested = slotsOf(props.children);
+    const dot = findSlot(nested, "dot");
+    const activeDot = findSlot(nested, "activeDot");
+    out.areas.push({
+      dataKey: props.dataKey,
+      variant: props.variant ?? "gradient",
+      dotVariant: dot ? (slotProps<DotProps>(dot).variant ?? "default") : "none",
+      activeDotVariant: activeDot
+        ? (slotProps<DotProps>(activeDot).variant ?? "default")
+        : "none",
+    });
+  }
+
+  const xAxis = findSlot(slots, "xAxis");
+  if (xAxis) {
+    const props = slotProps<XAxisProps>(xAxis);
+    out.xAxis = { dataKey: props.dataKey, tickFormatter: props.tickFormatter };
+  }
+
+  out.showGrid = findSlot(slots, "grid") !== undefined;
+
+  return out;
+}
 
 /** Runs body in a tracked root and always disposes. */
 function inRoot<T>(body: () => T): T {

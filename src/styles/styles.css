@@ -1,48 +1,210 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./foundation.css";
+@import "./shadcn.css";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PHASE 1 PLACEHOLDER — minimal token set, just enough for the scaffold to
-   render. Phase 2 replaces this wholesale with the full EvilCharts token set
-   (globals.css lines 54–195: light :root + .dark, ~40 tokens each).
+   Design tokens — ported from EvilCharts (src/app/globals.css), MIT.
 
-   Do not build components against this file as-is.
+   Deliberately kept token-for-token identical to upstream so chart code and
+   docs snippets copy across in either direction. Two intentional differences:
+
+   1. Fonts. Upstream loads Geist/JetBrains Mono through next/font, which gives
+      it --font-geist-sans etc. We load the same two families from Google Fonts
+      in index.html and point --font-sans / --font-mono straight at them.
+   2. No `--color-*: initial`. solid-foundation-design-system resets the whole
+      Tailwind palette; EvilCharts does not. Keeping the palette is the superset
+      — semantic tokens still resolve, and raw utilities keep working.
+
+   ─── Load-bearing for charts ───────────────────────────────────────────────
+   resolveColors() paints a probe span and reads getComputedStyle().color for
+   the classes text-muted-foreground, text-border, text-foreground and
+   text-background. All four MUST resolve to real colors in both themes or
+   every chart silently falls back to grey. Guarded by tokens.test.ts.
+
+   The dark selector must stay `.dark` — chart code hardcodes
+   THEMES = { light: "", dark: ".dark" } and buildChartCss() emits
+   `.dark [data-chart=id] { … }`.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Class-based dark mode, matching EvilCharts. The charts' resolveColors()
-   assumes `.dark` as the dark selector (THEMES = { light: "", dark: ".dark" }). */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --breakpoint-sidebar: 940px;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
 
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* Not from EvilCharts — required by the vendored components (Button's
+     `brand` variant, Badge's `brand`/`success`/`warning`). See the :root block
+     for provenance. Enforced by vendored-tokens.test.ts. */
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-code: var(--code);
+  --color-code-foreground: var(--code-foreground);
+  --color-code-highlight: var(--code-highlight);
+  --color-code-number: var(--code-number);
+  --color-path: var(--path);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 :root {
+  --radius: 0.525rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(15% 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(15% 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.4 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(15% 0 0);
+  --destructive: oklch(59.579% 0.21554 24.733);
+  --destructive-foreground: oklch(0.97 0.01 17);
   --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(98% 0.00011 271.152);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(15% 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(93% 0 0);
+  --sidebar-accent-foreground: oklch(15% 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+  --surface: oklch(0.98 0 0);
+  --surface-foreground: oklch(0.145 0 0);
+  --code: oklch(0.98 0 0);
+  --code-foreground: oklch(0.145 0 0);
+  --code-highlight: oklch(0.96 0 0);
+  --code-number: oklch(0.56 0 0);
+  --selection: oklch(0.145 0 0);
+  --selection-foreground: oklch(1 0 0);
+  --path: oklch(0.9037 0 0);
+
+  /* ── Not from EvilCharts ────────────────────────────────────────────────
+     The vendored components need these; upstream EvilCharts has no brand or
+     status colors. Light values are taken verbatim from
+     solid-foundation-design-system so the components look identical there and
+     here. Dark values are authored (that repo is light-only) — hue and chroma
+     held, lightness raised so `text-success` and friends stay legible on the
+     near-black surface rather than inverting to a neutral the way EvilCharts
+     treats --primary. */
+  --brand: oklch(0.5 0.134 242.749);
+  --brand-foreground: oklch(0.977 0.013 236.62);
+  --success: oklch(50% 0.14 148);
+  --warning: oklch(55% 0.13 78);
 }
 
 .dark {
   --background: oklch(14% 0 270);
   --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.269 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.18 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(20% 0 71);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(62.559% 0.22587 26.142);
   --border: oklch(100% 0 271.152 / 0.075);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(16% 0 270);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(21% 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.439 0 0);
+  --surface: oklch(0.2 0 0);
+  --surface-foreground: oklch(0.708 0 0);
+  --code: oklch(0.2 0 0);
+  --code-foreground: oklch(0.708 0 0);
+  --code-highlight: oklch(0.27 0 0);
+  --code-number: oklch(0.72 0 0);
+  --selection: oklch(0.922 0 0);
+  --selection-foreground: oklch(15% 0 0);
+  --path: oklch(0.269 0 0);
+
+  /* Authored here — see the :root block. Lightness raised for the dark
+     surface; hue and chroma held so the brand reads as the same colour. */
+  --brand: oklch(0.62 0.15 242.749);
+  --brand-foreground: oklch(0.985 0 0);
+  --success: oklch(0.72 0.15 148);
+  --warning: oklch(0.78 0.14 78);
 }
 
 @layer base {
   * {
-    @apply box-border border-border;
+    @apply box-border border-border outline-ring/50;
   }
 
   html,
@@ -54,5 +216,15 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--selection);
+    color: var(--selection-foreground);
   }
 }

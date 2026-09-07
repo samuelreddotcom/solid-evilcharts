@@ -16,5 +16,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    setupFiles: ["./vitest.setup.ts"],
+    // Transforming Ark/Zag on every run dominates the runtime otherwise.
+    fsModuleCache: true,
   },
 });

@@ -1,0 +1,126 @@
+
+@keyframes accordionDown {
+  from {
+    opacity: 0.01;
+    height: 0;
+  }
+  to {
+    opacity: 1;
+    height: var(--height);
+  }
+}
+
+@keyframes accordionUp {
+  from {
+    opacity: 1;
+    height: var(--height);
+  }
+  to {
+    opacity: 0.01;
+    height: 0;
+  }
+}
+
+[data-scope="accordion"][data-part="item-content"][data-state="open"] {
+  animation: accordionDown 250ms ease-in-out;
+}
+
+[data-scope="accordion"][data-part="item-content"][data-state="closed"] {
+  animation: accordionUp 200ms ease-in-out;
+}
+
+/* Dedicated keyframes (vs. accordion's slideDown/Up) so partial collapse can
+   animate to/from --collapsed-height instead of 0. Falls back to 0 when unset. */
+@keyframes collapsibleDown {
+  from {
+    height: var(--collapsed-height, 0);
+  }
+  to {
+    height: var(--height);
+  }
+}
+
+@keyframes collapsibleUp {
+  from {
+    height: var(--height);
+  }
+  to {
+    height: var(--collapsed-height, 0);
+  }
+}
+
+[data-scope="collapsible"][data-part="content"][data-state="open"] {
+  animation: collapsibleDown 250ms ease-in-out;
+}
+
+[data-scope="collapsible"][data-part="content"][data-state="closed"] {
+  animation: collapsibleUp 200ms ease-in-out;
+}
+
+[data-scope="collapsible"][data-part="indicator"] {
+  transition: transform 200ms;
+}
+
+[data-scope="collapsible"][data-part="indicator"][data-state="open"] {
+  transform: rotate(90deg);
+}
+
+/* MARK: Progress — indeterminate (value=null) */
+/* Ark clears the inline width/dasharray it normally drives from --percent
+   when indeterminate, so without this the linear range has no width and the
+   circular range renders as a full solid ring. These animate on top of that. */
+
+@keyframes progressIndeterminate {
+  0% {
+    left: -40%;
+    right: 100%;
+  }
+  60% {
+    left: 100%;
+    right: -50%;
+  }
+  100% {
+    left: 100%;
+    right: -50%;
+  }
+}
+
+[data-scope="progress"][data-part="range"][data-state="indeterminate"] {
+  position: absolute;
+  inset-block: 0;
+  animation: progressIndeterminate 1.6s ease-in-out infinite;
+}
+
+/* Two animations combine for the circular spinner, matching Ark's own
+   reference demo: a continuous spin on the whole circle (data-part="circle")
+   plus a growing/shrinking arc on the range. The arc alone barely reads as
+   "loading" — it's the spin that sells it. */
+
+@keyframes progressCircleSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+[data-scope="progress"][data-part="circle"][data-state="indeterminate"] {
+  animation: progressCircleSpin 2s linear infinite;
+}
+
+@keyframes progressCircleIndeterminate {
+  0% {
+    stroke-dasharray: calc(var(--circumference) * 0.01) var(--circumference);
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: calc(var(--circumference) * 0.4) var(--circumference);
+    stroke-dashoffset: calc(var(--circumference) * -0.2);
+  }
+  100% {
+    stroke-dasharray: calc(var(--circumference) * 0.01) var(--circumference);
+    stroke-dashoffset: calc(var(--circumference) * -0.99);
+  }
+}
+
+[data-scope="progress"][data-part="circle-range"][data-state="indeterminate"] {
+  animation: progressCircleIndeterminate 1.5s ease-in-out infinite;
+}

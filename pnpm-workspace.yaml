@@ -1,0 +1,4 @@
+# pnpm 11 moved settings out of package.json's "pnpm" field into this file.
+# esbuild ships a platform binary via a postinstall script; Vite needs it.
+allowBuilds:
+  esbuild: true

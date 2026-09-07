@@ -1,0 +1,58 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PHASE 1 PLACEHOLDER — minimal token set, just enough for the scaffold to
+   render. Phase 2 replaces this wholesale with the full EvilCharts token set
+   (globals.css lines 54–195: light :root + .dark, ~40 tokens each).
+
+   Do not build components against this file as-is.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Class-based dark mode, matching EvilCharts. The charts' resolveColors()
+   assumes `.dark` as the dark selector (THEMES = { light: "", dark: ".dark" }). */
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.4 0 0);
+  --border: oklch(0.922 0 0);
+}
+
+.dark {
+  --background: oklch(14% 0 270);
+  --foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --border: oklch(100% 0 271.152 / 0.075);
+}
+
+@layer base {
+  * {
+    @apply box-border border-border;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

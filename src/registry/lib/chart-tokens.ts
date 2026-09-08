@@ -1,3 +1,5 @@
+import type { Component, JSX } from "solid-js";
+
 /**
  * Engine-neutral chart colour plumbing.
  *
@@ -14,7 +16,6 @@
  * ECharts-specific paint (LinearGradient construction) lives in
  * ./echarts-paint.ts.
  */
-import type { Component, JSX } from "solid-js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Theme keys + config

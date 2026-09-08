@@ -1,13 +1,3 @@
-/**
- * Area chart — public types, slot shapes, and tuning constants.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-area-chart.tsx` (MIT).
- *
- * Differences from the line chart, which this otherwise mirrors:
- * • gains a fill system (`AreaVariant`, see ./fills.ts) and stacking (`StackType`)
- * • gains a controlled `selectedDataKey` prop
- * • drops the glow overlay entirely
- */
 import type { JSX } from "solid-js";
 
 import type { CurveType } from "../../lib/chart-series";
@@ -20,6 +10,17 @@ import type {
   TooltipRoundness,
   TooltipVariant,
 } from "../../lib/echarts-tooltip";
+
+/**
+ * Area chart — public types, slot shapes, and tuning constants.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-area-chart.tsx` (MIT).
+ *
+ * Differences from the line chart, which this otherwise mirrors:
+ * • gains a fill system (`AreaVariant`, see ./fills.ts) and stacking (`StackType`)
+ * • gains a controlled `selectedDataKey` prop
+ * • drops the glow overlay entirely
+ */
 
 export type {
   ChartConfig,

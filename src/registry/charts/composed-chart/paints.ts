@@ -1,3 +1,9 @@
+import type { ImagePatternObject } from "echarts/core";
+import * as echarts from "echarts/core";
+
+import { FALLBACK_SERIES_COLOR, withAlpha } from "../../lib/chart-tokens";
+import type { BarVariant, SeriesPaint } from "./types";
+
 /**
  * Composed chart — bar fill paints.
  *
@@ -7,11 +13,6 @@
  *
  * Ported from EvilCharts `echarts-composed-chart.tsx` (MIT).
  */
-import type { ImagePatternObject } from "echarts/core";
-import * as echarts from "echarts/core";
-
-import { FALLBACK_SERIES_COLOR, withAlpha } from "../../lib/chart-tokens";
-import type { BarVariant, SeriesPaint } from "./types";
 
 /**
  * The Recharts hatch mask, exactly: a field at 30% alpha with a full-strength

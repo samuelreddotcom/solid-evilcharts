@@ -1,9 +1,3 @@
-/**
- * Apache ECharts radar chart for Solid.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-radar-chart.tsx` (MIT).
- * See ../line-chart/line-chart.tsx for the shared React → Solid notes.
- */
 import {
   Show,
   children,
@@ -52,6 +46,13 @@ import {
   REVEAL_DURATION,
   type EChartsRadarChartProps,
 } from "./types";
+
+/**
+ * Apache ECharts radar chart for Solid.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-radar-chart.tsx` (MIT).
+ * See ../line-chart/line-chart.tsx for the shared React → Solid notes.
+ */
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 

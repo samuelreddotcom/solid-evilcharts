@@ -1,8 +1,3 @@
-/**
- * Composed chart — pure option builders.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-composed-chart.tsx` (MIT).
- */
 import { BarChart, LineChart, type BarSeriesOption, type LineSeriesOption } from "echarts/charts";
 import {
   DataZoomComponent,
@@ -64,6 +59,12 @@ import {
   type XAxisSlot,
   type YAxisSlot,
 } from "./types";
+
+/**
+ * Composed chart — pure option builders.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-composed-chart.tsx` (MIT).
+ */
 
 echarts.use([BarChart, LineChart, GridComponent, TooltipComponent, DataZoomComponent]);
 

@@ -1,14 +1,3 @@
-/**
- * Series helpers shared by every cartesian chart.
- *
- * EvilCharts duplicates these in each chart file, because each ships as one
- * self-contained copy-paste module. This port already splits charts into
- * directories, so they live here instead — the alternative is the same five
- * functions repeated across eight charts.
- *
- * Engine-agnostic on purpose: nothing here imports `echarts`.
- */
-
 export type CurveType =
   | "linear"
   | "smooth"
@@ -18,6 +7,21 @@ export type CurveType =
   | "monotoneY"
   | "natural"
   | "step";
+
+/**
+ * Series helpers shared by every cartesian chart.
+ *
+ * EvilCharts duplicates these in each chart file, because each ships as one
+ * self-contained copy-paste module. This port already splits charts into
+ * directories, so they live here instead — the alternative is the same five
+ * functions repeated across eight charts.
+ *
+ * Engine-agnostic on purpose: nothing here imports `echarts`.
+ *
+ * This banner sits BELOW the first statement rather than above it because the
+ * shadcn CLI deletes all leading trivia when it installs a file. Every other
+ * distributed file puts it after the imports; this one has none.
+ */
 
 /** Shimmer window half-width, as a fraction of chart width. */
 export const LOADING_SHIMMER_BAND = 0.2;

@@ -1,14 +1,3 @@
-/**
- * Radial chart — public types, slot shapes, and tuning constants.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-radial-chart.tsx` (MIT).
- *
- * Polar like the pie, but built on a completely different primitive: a BAR
- * series on a polar coordinate system, not a pie series. Each row is one
- * concentric ring whose arc length encodes its value. That means real angle and
- * radius axes — which the pie has none of — and a second polar just for the
- * background track.
- */
 import type { JSX } from "solid-js";
 
 import type { BackgroundVariant } from "../../lib/chart-background";
@@ -20,6 +9,18 @@ import type {
   TooltipRoundness,
   TooltipVariant,
 } from "../../lib/echarts-tooltip";
+
+/**
+ * Radial chart — public types, slot shapes, and tuning constants.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-radial-chart.tsx` (MIT).
+ *
+ * Polar like the pie, but built on a completely different primitive: a BAR
+ * series on a polar coordinate system, not a pie series. Each row is one
+ * concentric ring whose arc length encodes its value. That means real angle and
+ * radius axes — which the pie has none of — and a second polar just for the
+ * background track.
+ */
 
 export type {
   BackgroundVariant,

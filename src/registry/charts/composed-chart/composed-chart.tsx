@@ -1,9 +1,3 @@
-/**
- * Apache ECharts composed chart for Solid — bars and lines on one axis.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-composed-chart.tsx` (MIT).
- * See ../line-chart/line-chart.tsx for the shared React → Solid notes.
- */
 import {
   Show,
   children,
@@ -65,6 +59,13 @@ import {
   REVEAL_DURATION,
   type EChartsComposedChartProps,
 } from "./types";
+
+/**
+ * Apache ECharts composed chart for Solid — bars and lines on one axis.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-composed-chart.tsx` (MIT).
+ * See ../line-chart/line-chart.tsx for the shared React → Solid notes.
+ */
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 

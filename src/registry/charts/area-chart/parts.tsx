@@ -1,14 +1,3 @@
-/**
- * Area chart — the declarative config children, and the parser that walks them.
- *
- * Every part renders nothing; its PRESENCE and props are the configuration.
- * Presence semantics mirror the Recharts twin: omit a child and that part does
- * not render.
- *
- * React reads these back with `Children.forEach` + `child.type === Area`.
- * Solid has no element descriptors, so each marker returns a config object and
- * `collectConfig` resolves them — see ../../lib/slots.tsx.
- */
 import { Brush, type BrushProps } from "../../lib/echarts-brush";
 import type { DotVariant } from "../../lib/echarts-dot";
 import { createMarker, filterSlots, findSlot, slotProps, slotsOf } from "../../lib/slots";
@@ -28,6 +17,18 @@ import {
   type YAxisProps,
   type YAxisSlot,
 } from "./types";
+
+/**
+ * Area chart — the declarative config children, and the parser that walks them.
+ *
+ * Every part renders nothing; its PRESENCE and props are the configuration.
+ * Presence semantics mirror the Recharts twin: omit a child and that part does
+ * not render.
+ *
+ * React reads these back with `Children.forEach` + `child.type === Area`.
+ * Solid has no element descriptors, so each marker returns a config object and
+ * `collectConfig` resolves them — see ../../lib/slots.tsx.
+ */
 
 /**
  * A single area series. Declares its own fill/stroke/curve/clickability and,

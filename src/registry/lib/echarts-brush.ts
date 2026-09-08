@@ -1,3 +1,9 @@
+import type { DataZoomComponentOption } from "echarts/components";
+import * as echarts from "echarts/core";
+
+import { withAlpha, type ResolvedColors } from "./chart-tokens";
+import { createMarker } from "./slots";
+
 /**
  * Brush — the zoom strip below a cartesian chart.
  *
@@ -14,11 +20,6 @@
  * re-renders the dataZoom component mid-drag, which resets its drag anchor and
  * makes the handle progressively lag the pointer.
  */
-import type { DataZoomComponentOption } from "echarts/components";
-import * as echarts from "echarts/core";
-
-import { withAlpha, type ResolvedColors } from "./chart-tokens";
-import { createMarker } from "./slots";
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 

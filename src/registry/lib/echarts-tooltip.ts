@@ -1,3 +1,7 @@
+import type { TooltipComponentOption } from "echarts/components";
+
+import { indicatorBackground, type ResolvedColors } from "./chart-tokens";
+
 /**
  * Tooltip — shared HTML shell/row builders plus the chart-agnostic option
  * fields. Each chart composes its own rows but shares the shell and base option.
@@ -10,9 +14,6 @@
  * these are string builders, not components: ECharts' tooltip `formatter`
  * returns an HTML string, so there is nothing to convert to Solid JSX.
  */
-import type { TooltipComponentOption } from "echarts/components";
-
-import { indicatorBackground, type ResolvedColors } from "./chart-tokens";
 
 export type TooltipVariant = "default" | "frosted-glass";
 export type TooltipRoundness = "sm" | "md" | "lg" | "xl";

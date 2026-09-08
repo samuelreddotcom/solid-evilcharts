@@ -1,13 +1,3 @@
-/**
- * Line chart — pure option builders.
- *
- * Every function here maps a snapshot context to an ECharts option fragment.
- * Nothing touches reactive state or the chart instance: the component reads its
- * refs and renderer size ONCE per build into an OptionBuildContext, so each
- * fragment can be reasoned about (and tested) in isolation.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-line-chart.tsx` (MIT).
- */
 import { LineChart, type LineSeriesOption } from "echarts/charts";
 import {
   DataZoomComponent,
@@ -66,6 +56,17 @@ import {
   type XAxisSlot,
   type YAxisSlot,
 } from "./types";
+
+/**
+ * Line chart — pure option builders.
+ *
+ * Every function here maps a snapshot context to an ECharts option fragment.
+ * Nothing touches reactive state or the chart instance: the component reads its
+ * refs and renderer size ONCE per build into an OptionBuildContext, so each
+ * fragment can be reasoned about (and tested) in isolation.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-line-chart.tsx` (MIT).
+ */
 
 /**
  * Modular registration keeps the bundle lean — only the pieces this chart

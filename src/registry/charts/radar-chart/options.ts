@@ -1,8 +1,3 @@
-/**
- * Radar chart — pure option builders.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-radar-chart.tsx` (MIT).
- */
 import { RadarChart, type RadarSeriesOption } from "echarts/charts";
 import {
   RadarComponent,
@@ -39,6 +34,12 @@ import {
   type RadarSeriesConfig,
   type TooltipSlot,
 } from "./types";
+
+/**
+ * Radar chart — pure option builders.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-radar-chart.tsx` (MIT).
+ */
 
 echarts.use([RadarChart, RadarComponent, TooltipComponent]);
 

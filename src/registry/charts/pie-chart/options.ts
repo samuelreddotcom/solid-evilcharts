@@ -1,8 +1,3 @@
-/**
- * Pie chart — pure option builders.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-pie-chart.tsx` (MIT).
- */
 import { PieChart, type PieSeriesOption } from "echarts/charts";
 import { TooltipComponent, type TooltipComponentOption } from "echarts/components";
 import type { ComposeOption } from "echarts/core";
@@ -36,6 +31,12 @@ import {
   type PieSlot,
   type TooltipSlot,
 } from "./types";
+
+/**
+ * Pie chart — pure option builders.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-pie-chart.tsx` (MIT).
+ */
 
 echarts.use([PieChart, TooltipComponent]);
 

@@ -1,21 +1,3 @@
-/**
- * Apache ECharts bar chart for Solid.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-bar-chart.tsx` (MIT). See
- * ../line-chart/line-chart.tsx for the shared React → Solid notes.
- *
- * What is specific to this chart:
- * • a push cycle that MEASURES the laid-out coordinate system and rebuilds
- *   in the same task, so the first paint is already correct
- * • the `expandable` variant's hover rAF, driven from a zrender mousemove and
- *   applied as a series-scoped silent merge
- * • `layout` swapping the category and value axes
- *
- * In Solid, `animateExpand` and `patchStrippedCaps` are plain component-scope
- * functions. Upstream has to assign them into a ref from inside an effect
- * because they close over a `useCallback`'d builder; here `buildOption` simply
- * reads current signal values, so no such dance is needed.
- */
 import {
   Show,
   children,
@@ -68,6 +50,25 @@ import {
   LOADING_SHIMMER_MAX_OPACITY,
   type EChartsBarChartProps,
 } from "./types";
+
+/**
+ * Apache ECharts bar chart for Solid.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-bar-chart.tsx` (MIT). See
+ * ../line-chart/line-chart.tsx for the shared React → Solid notes.
+ *
+ * What is specific to this chart:
+ * • a push cycle that MEASURES the laid-out coordinate system and rebuilds
+ *   in the same task, so the first paint is already correct
+ * • the `expandable` variant's hover rAF, driven from a zrender mousemove and
+ *   applied as a series-scoped silent merge
+ * • `layout` swapping the category and value axes
+ *
+ * In Solid, `animateExpand` and `patchStrippedCaps` are plain component-scope
+ * functions. Upstream has to assign them into a ref from inside an effect
+ * because they close over a `useCallback`'d builder; here `buildOption` simply
+ * reads current signal values, so no such dance is needed.
+ */
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 

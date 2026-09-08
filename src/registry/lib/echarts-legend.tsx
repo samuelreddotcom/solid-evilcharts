@@ -1,3 +1,7 @@
+import { For, type JSX } from "solid-js";
+
+import { getColorsCount, indicatorBackground, type ChartConfig } from "./chart-tokens";
+
 /**
  * Legend overlay — replicates EvilCharts' ChartLegendContent and its 7
  * indicator variants. The legend is HTML inside `[data-chart={id}]`, so it uses
@@ -12,9 +16,6 @@
  * silently does nothing in Solid: no error, no warning, the style just never
  * lands. Guarded by echarts-legend.test.tsx.
  */
-import { For, type JSX } from "solid-js";
-
-import { getColorsCount, indicatorBackground, type ChartConfig } from "./chart-tokens";
 
 export type LegendVariant =
   | "square"

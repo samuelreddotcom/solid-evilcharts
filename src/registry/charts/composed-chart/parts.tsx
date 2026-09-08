@@ -1,11 +1,3 @@
-/**
- * Composed chart — the declarative config children, and the parser.
- *
- * The only chart with TWO series markers. `<Bar>` and `<Line>` are collected
- * into separate lists, and the option builder always emits bars first so the
- * polyline strokes read above the columns — matching the Recharts twin's JSX
- * order rather than the order they were declared in.
- */
 import { Brush, type BrushProps } from "../../lib/echarts-brush";
 import type { DotVariant } from "../../lib/echarts-dot";
 import { createMarker, filterSlots, findSlot, slotProps, slotsOf } from "../../lib/slots";
@@ -27,6 +19,15 @@ import {
   type YAxisProps,
   type YAxisSlot,
 } from "./types";
+
+/**
+ * Composed chart — the declarative config children, and the parser.
+ *
+ * The only chart with TWO series markers. `<Bar>` and `<Line>` are collected
+ * into separate lists, and the option builder always emits bars first so the
+ * polyline strokes read above the columns — matching the Recharts twin's JSX
+ * order rather than the order they were declared in.
+ */
 
 /** A single bar series. Glows via a canvas shadow. */
 export const Bar = createMarker<"bar", BarProps>("bar");

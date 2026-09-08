@@ -1,3 +1,5 @@
+import { type JSX } from "solid-js";
+
 /**
  * Config-as-children for Solid.
  *
@@ -20,7 +22,6 @@
  * reactivity through prop getters, `<Show>`, `<For>`, and junk children all
  * behave. Each chart defines its own markers and parser on top of this.
  */
-import { type JSX } from "solid-js";
 
 export const SLOT = Symbol("chart-slot");
 

@@ -1,3 +1,5 @@
+import { type Component, type JSX } from "solid-js";
+
 /**
  * Decorative SVG background patterns, drawn BEHIND the transparent ECharts
  * canvas. Shared by the pie and radial charts.
@@ -14,7 +16,6 @@
  * are a React-only convenience; in Solid they land as unknown attributes and
  * are silently ignored — the same failure mode as the legend's style keys.
  */
-import { type Component, type JSX } from "solid-js";
 
 /**
  * Shared by the pie and radial charts. Lives in lib/ rather than beside either

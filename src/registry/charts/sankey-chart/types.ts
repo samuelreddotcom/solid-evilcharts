@@ -1,12 +1,3 @@
-/**
- * Sankey chart — public types, slot shapes, and tuning constants.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-sankey-chart.tsx` (MIT).
- *
- * The structural outlier of the set. It shares the token and tooltip layers and
- * nothing else: no axes, no polar system, no legend, and a data shape of its own
- * (`{ nodes, links }` rather than an array of rows).
- */
 import type { JSX } from "solid-js";
 
 import type { ChartConfig } from "../../lib/chart-tokens";
@@ -16,6 +7,16 @@ import type {
   TooltipRoundness,
   TooltipVariant,
 } from "../../lib/echarts-tooltip";
+
+/**
+ * Sankey chart — public types, slot shapes, and tuning constants.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-sankey-chart.tsx` (MIT).
+ *
+ * The structural outlier of the set. It shares the token and tooltip layers and
+ * nothing else: no axes, no polar system, no legend, and a data shape of its own
+ * (`{ nodes, links }` rather than an array of rows).
+ */
 
 export type {
   ChartConfig,

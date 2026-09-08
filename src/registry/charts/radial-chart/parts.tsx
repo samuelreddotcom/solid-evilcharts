@@ -1,10 +1,3 @@
-/**
- * Radial chart — the declarative config children, and the parser.
- *
- * `<RadialBar>` carries the ring geometry; the background pattern is a ROOT
- * PROP here (`backgroundVariant`), not a marker, which is how upstream draws
- * the line between the two polar charts.
- */
 import { createMarker, findSlot, slotProps, slotsOf } from "../../lib/slots";
 import {
   DEFAULT_BAR_SIZE,
@@ -17,6 +10,14 @@ import {
   type TooltipProps,
   type TooltipSlot,
 } from "./types";
+
+/**
+ * Radial chart — the declarative config children, and the parser.
+ *
+ * `<RadialBar>` carries the ring geometry; the background pattern is a ROOT
+ * PROP here (`backgroundVariant`), not a marker, which is how upstream draws
+ * the line between the two polar charts.
+ */
 
 /** The radial bar series. Each data row becomes one concentric ring. */
 export const RadialBar = createMarker<"radialBar", RadialBarProps>("radialBar");

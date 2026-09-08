@@ -1,15 +1,3 @@
-/**
- * Apache ECharts pie chart for Solid.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-pie-chart.tsx` (MIT). See
- * ../line-chart/line-chart.tsx for the shared React → Solid notes.
- *
- * The first non-cartesian chart, and much smaller than the cartesian ones: no
- * axes, no grid, no brush, no dataZoom, no resize-driven texture rebakes. What
- * it adds is an SVG background layer behind the transparent canvas, and a
- * shimmer that sweeps ANGULARLY around the ring rather than diagonally across a
- * plot.
- */
 import {
   Show,
   children,
@@ -43,6 +31,19 @@ import {
   REVEAL_DURATION,
   type EChartsPieChartProps,
 } from "./types";
+
+/**
+ * Apache ECharts pie chart for Solid.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-pie-chart.tsx` (MIT). See
+ * ../line-chart/line-chart.tsx for the shared React → Solid notes.
+ *
+ * The first non-cartesian chart, and much smaller than the cartesian ones: no
+ * axes, no grid, no brush, no dataZoom, no resize-driven texture rebakes. What
+ * it adds is an SVG background layer behind the transparent canvas, and a
+ * shimmer that sweeps ANGULARLY around the ring rather than diagonally across a
+ * plot.
+ */
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 

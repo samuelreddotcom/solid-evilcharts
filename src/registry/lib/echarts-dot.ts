@@ -1,12 +1,13 @@
+import type * as echarts from "echarts/core";
+
+import { FALLBACK_SERIES_COLOR } from "./chart-tokens";
+
 /**
  * Dot markers — maps the resting/active variants onto ECharts symbols.
  * Shared by every chart that draws point markers.
  *
  * Ported from EvilCharts `src/registry/ui/echarts-dot.tsx` (MIT).
  */
-import type * as echarts from "echarts/core";
-
-import { FALLBACK_SERIES_COLOR } from "./chart-tokens";
 
 export type DotVariant = "none" | "default" | "border" | "colored-border" | "ping";
 

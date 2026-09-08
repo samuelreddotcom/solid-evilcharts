@@ -1,13 +1,3 @@
-/**
- * Bar chart — public types, slot shapes, and tuning constants.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-bar-chart.tsx` (MIT).
- *
- * A bigger departure from line/area than those two were from each other:
- * • eight fill variants, several needing per-datum paints (see ./paints.ts)
- * • a `layout` swap that exchanges the category and value axes
- * • measurements taken off the live coordinate system after first layout
- */
 import type { JSX } from "solid-js";
 
 import type { ChartConfig } from "../../lib/chart-tokens";
@@ -18,6 +8,17 @@ import type {
   TooltipRoundness,
   TooltipVariant,
 } from "../../lib/echarts-tooltip";
+
+/**
+ * Bar chart — public types, slot shapes, and tuning constants.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-bar-chart.tsx` (MIT).
+ *
+ * A bigger departure from line/area than those two were from each other:
+ * • eight fill variants, several needing per-datum paints (see ./paints.ts)
+ * • a `layout` swap that exchanges the category and value axes
+ * • measurements taken off the live coordinate system after first layout
+ */
 
 export type {
   ChartConfig,

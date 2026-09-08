@@ -1,17 +1,3 @@
-/**
- * Bar fill paints — the ECharts analogue of the Recharts bar fill variants.
- *
- * Unlike the area chart's fills (which run the colour gradient HORIZONTALLY), a
- * bar's base colour gradient runs VERTICALLY top→bottom, matching Recharts'
- * `ColorGradient` (x1 = x2 = 0), so each bar shows the full multi-stop gradient
- * inside its own box.
- *
- * Ported from EvilCharts `echarts-bar-chart.tsx` (MIT).
- *
- * The pattern fills need a real 2D canvas context, so they are no-ops under
- * jsdom and every caller falls back to a solid paint. The gradient paints are
- * pure and fully testable.
- */
 import type { ImagePatternObject } from "echarts/core";
 import * as echarts from "echarts/core";
 
@@ -27,6 +13,21 @@ import {
   STRIPPED_FALLBACK_FRACTION,
   type BarVariant,
 } from "./types";
+
+/**
+ * Bar fill paints — the ECharts analogue of the Recharts bar fill variants.
+ *
+ * Unlike the area chart's fills (which run the colour gradient HORIZONTALLY), a
+ * bar's base colour gradient runs VERTICALLY top→bottom, matching Recharts'
+ * `ColorGradient` (x1 = x2 = 0), so each bar shows the full multi-stop gradient
+ * inside its own box.
+ *
+ * Ported from EvilCharts `echarts-bar-chart.tsx` (MIT).
+ *
+ * The pattern fills need a real 2D canvas context, so they are no-ops under
+ * jsdom and every caller falls back to a solid paint. The gradient paints are
+ * pure and fully testable.
+ */
 
 /**
  * Solid vertical top→bottom colour for a series — a plain string when there is

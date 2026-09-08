@@ -1,11 +1,3 @@
-/**
- * Bar chart — the declarative config children, and the parser that walks them.
- *
- * Unlike line/area, `<Bar>` takes no nested children: dots are meaningless on a
- * rectangle. `<XAxis>` and `<YAxis>` swap category/value roles with `layout`, so
- * both collect into the same `AxisSlot` shape and the option builder decides
- * which is which.
- */
 import { Brush, type BrushProps } from "../../lib/echarts-brush";
 import { createMarker, filterSlots, findSlot, slotProps, slotsOf } from "../../lib/slots";
 import type {
@@ -21,6 +13,15 @@ import type {
   XAxisProps,
   YAxisProps,
 } from "./types";
+
+/**
+ * Bar chart — the declarative config children, and the parser that walks them.
+ *
+ * Unlike line/area, `<Bar>` takes no nested children: dots are meaningless on a
+ * rectangle. `<XAxis>` and `<YAxis>` swap category/value roles with `layout`, so
+ * both collect into the same `AxisSlot` shape and the option builder decides
+ * which is which.
+ */
 
 /**
  * A single bar series. Declares its own fill variant, radius, glow, buffer, and

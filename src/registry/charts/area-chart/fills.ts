@@ -1,3 +1,9 @@
+import type { ImagePatternObject } from "echarts/core";
+import * as echarts from "echarts/core";
+
+import { FALLBACK_SERIES_COLOR, withAlpha } from "../../lib/chart-tokens";
+import type { AreaVariant } from "./types";
+
 /**
  * Area fill paints — the ECharts analogue of the Recharts fill variants.
  *
@@ -8,11 +14,6 @@
  * (`patternFill` returns null and callers fall back to a flat alpha). The
  * fallbacks are tested; the textures themselves can only be checked in a browser.
  */
-import type { ImagePatternObject } from "echarts/core";
-import * as echarts from "echarts/core";
-
-import { FALLBACK_SERIES_COLOR, withAlpha } from "../../lib/chart-tokens";
-import type { AreaVariant } from "./types";
 
 /**
  * Tiling texture fills, tinted with the series' first colour.

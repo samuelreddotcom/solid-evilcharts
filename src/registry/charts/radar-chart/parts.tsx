@@ -1,10 +1,3 @@
-/**
- * Radar chart — the declarative config children, and the parser.
- *
- * The three axis-ish markers map onto ECharts fields whose names don't match
- * their own: `<PolarGrid>` drives the spokes AND the rings, `<PolarAngleAxis>`
- * the perimeter labels, `<PolarRadiusAxis>` the radial scale.
- */
 import type { DotVariant } from "../../lib/echarts-dot";
 import { createMarker, filterSlots, findSlot, slotProps, slotsOf } from "../../lib/slots";
 import {
@@ -23,6 +16,14 @@ import {
   type TooltipProps,
   type TooltipSlot,
 } from "./types";
+
+/**
+ * Radar chart — the declarative config children, and the parser.
+ *
+ * The three axis-ish markers map onto ECharts fields whose names don't match
+ * their own: `<PolarGrid>` drives the spokes AND the rings, `<PolarAngleAxis>`
+ * the perimeter labels, `<PolarRadiusAxis>` the radial scale.
+ */
 
 /** A single radar series — one polygon over all angle-axis categories. */
 export const Radar = createMarker<"radar", RadarProps>("radar");

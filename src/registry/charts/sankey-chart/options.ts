@@ -1,8 +1,3 @@
-/**
- * Sankey chart — pure option builders, plus the intro cascade's paint maths.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-sankey-chart.tsx` (MIT).
- */
 import { SankeyChart, type SankeySeriesOption } from "echarts/charts";
 import { TooltipComponent, type TooltipComponentOption } from "echarts/components";
 import type { ComposeOption } from "echarts/core";
@@ -52,6 +47,12 @@ import {
   type SankeyData,
   type TooltipSlot,
 } from "./types";
+
+/**
+ * Sankey chart — pure option builders, plus the intro cascade's paint maths.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-sankey-chart.tsx` (MIT).
+ */
 
 echarts.use([SankeyChart, TooltipComponent]);
 

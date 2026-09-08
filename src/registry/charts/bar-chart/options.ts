@@ -1,9 +1,3 @@
-/**
- * Bar chart — pure option builders, plus the two live-coordinate measurements
- * the variants depend on.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-bar-chart.tsx` (MIT).
- */
 import { BarChart, type BarSeriesOption } from "echarts/charts";
 import {
   DataZoomComponent,
@@ -64,6 +58,13 @@ import {
   type LegendSlot,
   type TooltipSlot,
 } from "./types";
+
+/**
+ * Bar chart — pure option builders, plus the two live-coordinate measurements
+ * the variants depend on.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-bar-chart.tsx` (MIT).
+ */
 
 echarts.use([BarChart, GridComponent, TooltipComponent, DataZoomComponent]);
 

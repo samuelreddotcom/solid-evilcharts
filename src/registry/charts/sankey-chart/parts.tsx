@@ -1,11 +1,3 @@
-/**
- * Sankey chart — the declarative config children, and the parser.
- *
- * A sankey's nodes and links are intrinsic to its DATA, so `<Node>` and
- * `<Link>` always take effect — they only CONFIGURE the diagram, unlike the
- * presence-gated parts elsewhere. `<NodeLabel>` and `<Tooltip>` do follow the
- * usual presence semantics.
- */
 import { createMarker, findSlot, slotProps, slotsOf } from "../../lib/slots";
 import {
   DEFAULT_NODE_PADDING,
@@ -19,6 +11,15 @@ import {
   type TooltipProps,
   type TooltipSlot,
 } from "./types";
+
+/**
+ * Sankey chart — the declarative config children, and the parser.
+ *
+ * A sankey's nodes and links are intrinsic to its DATA, so `<Node>` and
+ * `<Link>` always take effect — they only CONFIGURE the diagram, unlike the
+ * presence-gated parts elsewhere. `<NodeLabel>` and `<Tooltip>` do follow the
+ * usual presence semantics.
+ */
 
 /** Configures how the sankey nodes render. Compose a `<NodeLabel>` inside it. */
 export const Node = createMarker<"node", NodeProps>("node");

@@ -1,26 +1,3 @@
-/**
- * Apache ECharts line chart for Solid, exposing a compound-as-config API so its
- * JSX reads identically to the EvilCharts original.
- *
- * The root owns the data, config, selection state, loading skeleton, intro
- * reveal, and optional zoom brush; every visual part — `<Line>`, `<XAxis>`,
- * `<YAxis>`, `<Grid>`, `<Tooltip>`, `<Legend>`, `<Brush>` — is a declarative
- * child that renders nothing.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-line-chart.tsx` (MIT).
- *
- * ─── React → Solid notes ───────────────────────────────────────────────────
- * • Props are NEVER destructured; defaults come from mergeProps. Destructuring
- *   would snapshot values and break reactivity.
- * • The init effect uses `on(() => props.renderer, …)` so it re-runs ONLY on a
- *   renderer switch. A bare createEffect would re-init on every tracked read.
- * • `chartEpoch` bumps after each init so the sync effect re-pushes against the
- *   new instance. React got this free from the [renderer] dep array.
- * • `motion/react` has no Solid equivalent; the loading badge uses
- *   tw-animate-css classes instead.
- * • The whole LiveState object is plain (not a signal) — same reasoning as
- *   upstream's useRef: none of it is render output.
- */
 import {
   Show,
   children,
@@ -81,6 +58,30 @@ import {
   REVEAL_PREFIX,
   type EChartsLineChartProps,
 } from "./types";
+
+/**
+ * Apache ECharts line chart for Solid, exposing a compound-as-config API so its
+ * JSX reads identically to the EvilCharts original.
+ *
+ * The root owns the data, config, selection state, loading skeleton, intro
+ * reveal, and optional zoom brush; every visual part — `<Line>`, `<XAxis>`,
+ * `<YAxis>`, `<Grid>`, `<Tooltip>`, `<Legend>`, `<Brush>` — is a declarative
+ * child that renders nothing.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-line-chart.tsx` (MIT).
+ *
+ * ─── React → Solid notes ───────────────────────────────────────────────────
+ * • Props are NEVER destructured; defaults come from mergeProps. Destructuring
+ *   would snapshot values and break reactivity.
+ * • The init effect uses `on(() => props.renderer, …)` so it re-runs ONLY on a
+ *   renderer switch. A bare createEffect would re-init on every tracked read.
+ * • `chartEpoch` bumps after each init so the sync effect re-pushes against the
+ *   new instance. React got this free from the [renderer] dep array.
+ * • `motion/react` has no Solid equivalent; the loading badge uses
+ *   tw-animate-css classes instead.
+ * • The whole LiveState object is plain (not a signal) — same reasoning as
+ *   upstream's useRef: none of it is render output.
+ */
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 

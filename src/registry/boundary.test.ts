@@ -93,6 +93,23 @@ describe("registry boundary", () => {
     expect([...used].sort()).toEqual([...ALLOWED_PACKAGES]);
   });
 
+  it("no distributed file begins with a comment", () => {
+    // The shadcn CLI's ts-morph round-trip DELETES all leading trivia before a
+    // file's first statement — JSDoc, /*! legal comments and // lines alike,
+    // whether or not the file has imports. Verified on shadcn 3.4.0, 4.20.0 and
+    // 4.21.0, so it is structural, not a regression to wait out.
+    //
+    // That matters here beyond tidiness: these banners carry the
+    // "Ported from EvilCharts (MIT)" attribution and the porting-hazard notes.
+    // A banner placed after the first statement survives untouched, so every
+    // distributed file puts its banner below the imports.
+    const offenders = FILES.filter((f) => {
+      const first = readFileSync(f, "utf8").trimStart();
+      return first.startsWith("/*") || first.startsWith("//");
+    });
+    expect(offenders.map((f) => relative(REGISTRY, f))).toEqual([]);
+  });
+
   it("ships no `cn` — the vendored UI owns that, and it is not distributed", () => {
     // src/lib/cn.ts deliberately stayed outside the registry: only
     // src/components/ui/** uses it, so the registry needs neither the file nor

@@ -1,13 +1,3 @@
-/**
- * Area chart — pure option builders.
- *
- * Every function maps a snapshot context to an ECharts option fragment; nothing
- * touches reactive state or the chart instance. The two exceptions are
- * `resolveAreaAtPixel`, which needs the live instance for pixel conversion, and
- * `computePlottedTops`, which feeds it.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-area-chart.tsx` (MIT).
- */
 import { LineChart, type LineSeriesOption } from "echarts/charts";
 import {
   DataZoomComponent,
@@ -63,6 +53,17 @@ import {
   type XAxisSlot,
   type YAxisSlot,
 } from "./types";
+
+/**
+ * Area chart — pure option builders.
+ *
+ * Every function maps a snapshot context to an ECharts option fragment; nothing
+ * touches reactive state or the chart instance. The two exceptions are
+ * `resolveAreaAtPixel`, which needs the live instance for pixel conversion, and
+ * `computePlottedTops`, which feeds it.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-area-chart.tsx` (MIT).
+ */
 
 /**
  * Modular registration — only what this chart needs. Areas are `type: "line"`

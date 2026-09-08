@@ -1,11 +1,3 @@
-/**
- * Line chart — public types, slot shapes, and tuning constants.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-line-chart.tsx` (MIT).
- * That file is a single 2,111-line module; this port splits it into
- * types / parts / options / component. The registry ships multi-file items, and
- * the split keeps each piece reviewable.
- */
 import type { JSX } from "solid-js";
 
 import type { ChartConfig } from "../../lib/chart-tokens";
@@ -17,6 +9,15 @@ import type {
   TooltipRoundness,
   TooltipVariant,
 } from "../../lib/echarts-tooltip";
+
+/**
+ * Line chart — public types, slot shapes, and tuning constants.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-line-chart.tsx` (MIT).
+ * That file is a single 2,111-line module; this port splits it into
+ * types / parts / options / component. The registry ships multi-file items, and
+ * the split keeps each piece reviewable.
+ */
 
 export type {
   ChartConfig,

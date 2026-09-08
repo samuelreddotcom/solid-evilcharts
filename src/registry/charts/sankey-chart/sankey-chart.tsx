@@ -1,15 +1,3 @@
-/**
- * Apache ECharts sankey chart for Solid.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-sankey-chart.tsx` (MIT).
- * See ../line-chart/line-chart.tsx for the shared React → Solid notes.
- *
- * The structural outlier: no axes, no polar system, no legend, and a data shape
- * of its own. Its entrance is also unlike every other chart's — a per-column
- * cascade driven by a rAF that re-pushes the full option each frame, because the
- * reveal is expressed as a windowed ALPHA on each element's existing paint
- * rather than as a layout change.
- */
 import {
   Show,
   children,
@@ -53,6 +41,19 @@ import {
   type EChartsSankeyChartProps,
   type IntroState,
 } from "./types";
+
+/**
+ * Apache ECharts sankey chart for Solid.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-sankey-chart.tsx` (MIT).
+ * See ../line-chart/line-chart.tsx for the shared React → Solid notes.
+ *
+ * The structural outlier: no axes, no polar system, no legend, and a data shape
+ * of its own. Its entrance is also unlike every other chart's — a per-column
+ * cascade driven by a rAF that re-pushes the full option each frame, because the
+ * reveal is expressed as a windowed ALPHA on each element's existing paint
+ * rather than as a layout change.
+ */
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 

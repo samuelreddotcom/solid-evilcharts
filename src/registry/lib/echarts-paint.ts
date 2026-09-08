@@ -1,3 +1,8 @@
+import { CanvasRenderer, SVGRenderer } from "echarts/renderers";
+import * as echarts from "echarts/core";
+
+import { FALLBACK_SERIES_COLOR } from "./chart-tokens";
+
 /**
  * The ECharts-specific half of the colour layer.
  *
@@ -6,10 +11,6 @@
  *
  * Ported from EvilCharts `src/registry/ui/echarts-chart.tsx` (MIT).
  */
-import { CanvasRenderer, SVGRenderer } from "echarts/renderers";
-import * as echarts from "echarts/core";
-
-import { FALLBACK_SERIES_COLOR } from "./chart-tokens";
 
 export const ECHARTS_RENDERERS = {
   canvas: "canvas",

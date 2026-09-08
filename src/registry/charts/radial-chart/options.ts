@@ -1,8 +1,3 @@
-/**
- * Radial chart — pure option builders.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-radial-chart.tsx` (MIT).
- */
 import { BarChart, type BarSeriesOption } from "echarts/charts";
 import {
   PolarComponent,
@@ -46,6 +41,12 @@ import {
   type RadialVariant,
   type TooltipSlot,
 } from "./types";
+
+/**
+ * Radial chart — pure option builders.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-radial-chart.tsx` (MIT).
+ */
 
 echarts.use([BarChart, PolarComponent, TooltipComponent]);
 

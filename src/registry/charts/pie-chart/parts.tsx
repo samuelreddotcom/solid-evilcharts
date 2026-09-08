@@ -1,9 +1,3 @@
-/**
- * Pie chart — the declarative config children, and the parser.
- *
- * `<Pie>` carries the whole shape (radii, angles, rounding, padding); `<Label>`
- * is nested inside it. No axes, grid or brush here.
- */
 import { createMarker, findSlot, slotProps, slotsOf } from "../../lib/slots";
 import {
   DEFAULT_CORNER_RADIUS,
@@ -24,6 +18,13 @@ import {
   type TooltipProps,
   type TooltipSlot,
 } from "./types";
+
+/**
+ * Pie chart — the declarative config children, and the parser.
+ *
+ * `<Pie>` carries the whole shape (radii, angles, rounding, padding); `<Label>`
+ * is nested inside it. No axes, grid or brush here.
+ */
 
 /**
  * The pie series. Declares its own shape and clickability; compose a `<Label>`

@@ -1,13 +1,3 @@
-/**
- * Apache ECharts radial chart for Solid.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-radial-chart.tsx` (MIT).
- * See ../line-chart/line-chart.tsx for the shared React → Solid notes.
- *
- * Polar like the pie, but built on a BAR series over a polar coordinate system
- * rather than a pie series — so it has real angle and radius axes, and a second
- * polar carrying nothing but the background track.
- */
 import {
   Show,
   children,
@@ -52,6 +42,17 @@ import {
   REVEAL_DURATION,
   type EChartsRadialChartProps,
 } from "./types";
+
+/**
+ * Apache ECharts radial chart for Solid.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-radial-chart.tsx` (MIT).
+ * See ../line-chart/line-chart.tsx for the shared React → Solid notes.
+ *
+ * Polar like the pie, but built on a BAR series over a polar coordinate system
+ * rather than a pie series — so it has real angle and radius axes, and a second
+ * polar carrying nothing but the background track.
+ */
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 

@@ -1,15 +1,3 @@
-/**
- * Composed chart — bars and lines on one shared category axis.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-composed-chart.tsx` (MIT).
- *
- * This is a deliberate SIMPLIFICATION of the two charts it merges, not a union
- * of them. Its `BarVariant` drops `blocks` and `expandable` (both need
- * post-layout measurement, which would drag the whole measure/re-push cycle in
- * for one variant), and its `<Line>` drops buffer lines and hover-reveal. What
- * it adds is the mixed-series machinery: two glow strategies, a two-shape
- * loading skeleton, and a brush that mirrors both kinds as area-lines.
- */
 import type { BarSeriesOption, LineSeriesOption } from "echarts/charts";
 import type * as echarts from "echarts/core";
 import type { ImagePatternObject } from "echarts/core";
@@ -25,6 +13,19 @@ import type {
   TooltipRoundness,
   TooltipVariant,
 } from "../../lib/echarts-tooltip";
+
+/**
+ * Composed chart — bars and lines on one shared category axis.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-composed-chart.tsx` (MIT).
+ *
+ * This is a deliberate SIMPLIFICATION of the two charts it merges, not a union
+ * of them. Its `BarVariant` drops `blocks` and `expandable` (both need
+ * post-layout measurement, which would drag the whole measure/re-push cycle in
+ * for one variant), and its `<Line>` drops buffer lines and hover-reveal. What
+ * it adds is the mixed-series machinery: two glow strategies, a two-shape
+ * loading skeleton, and a brush that mirrors both kinds as area-lines.
+ */
 
 export type {
   ChartConfig,

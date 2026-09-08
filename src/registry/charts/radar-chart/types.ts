@@ -1,14 +1,3 @@
-/**
- * Radar chart — public types, slot shapes, and tuning constants.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-radar-chart.tsx` (MIT).
- *
- * Polar, but on ECharts' dedicated `radar` coordinate system rather than a
- * `polar` one — so no angle/radius axis pair, just an indicator list. The
- * structural oddity is that **each series is a single data item**: one polygon
- * spanning every category, so all styling lives at the series level and there
- * is no per-datum anything.
- */
 import type { JSX } from "solid-js";
 
 import type { ChartConfig } from "../../lib/chart-tokens";
@@ -20,6 +9,18 @@ import type {
   TooltipRoundness,
   TooltipVariant,
 } from "../../lib/echarts-tooltip";
+
+/**
+ * Radar chart — public types, slot shapes, and tuning constants.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-radar-chart.tsx` (MIT).
+ *
+ * Polar, but on ECharts' dedicated `radar` coordinate system rather than a
+ * `polar` one — so no angle/radius axis pair, just an indicator list. The
+ * structural oddity is that **each series is a single data item**: one polygon
+ * spanning every category, so all styling lives at the series level and there
+ * is no per-datum anything.
+ */
 
 export type {
   ChartConfig,

@@ -1,13 +1,3 @@
-/**
- * Pie chart — public types, slot shapes, and tuning constants.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-pie-chart.tsx` (MIT).
- *
- * The first NON-CARTESIAN chart. It shares the token, tooltip and legend layers
- * with line/area/bar and almost nothing else: no axes, no grid, no brush, no
- * dataZoom. What it adds is sector geometry, a decorative SVG background layer,
- * and an angular loading shimmer.
- */
 import type { JSX } from "solid-js";
 
 import type { BackgroundVariant } from "../../lib/chart-background";
@@ -19,6 +9,17 @@ import type {
   TooltipRoundness,
   TooltipVariant,
 } from "../../lib/echarts-tooltip";
+
+/**
+ * Pie chart — public types, slot shapes, and tuning constants.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-pie-chart.tsx` (MIT).
+ *
+ * The first NON-CARTESIAN chart. It shares the token, tooltip and legend layers
+ * with line/area/bar and almost nothing else: no axes, no grid, no brush, no
+ * dataZoom. What it adds is sector geometry, a decorative SVG background layer,
+ * and an angular loading shimmer.
+ */
 
 export type {
   BackgroundVariant,

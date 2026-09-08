@@ -1,18 +1,3 @@
-/**
- * Apache ECharts area chart for Solid.
- *
- * Ported from EvilCharts `src/registry/charts/echarts-area-chart.tsx` (MIT).
- * Structurally the line chart's twin; see ../line-chart/line-chart.tsx for the
- * shared React → Solid notes (`on()` on the init effect, `chartEpoch`,
- * mergeProps instead of destructuring, kebab-case styles).
- *
- * What differs here:
- * • stacking (`stackType`), including the mirror stacks that keep buffer /
- *   reveal / mini layers from doubling the real stack's height
- * • a controlled `selectedDataKey` prop
- * • hover-highlight is POINTER-driven, not series-mouseover-driven — see below
- * • no glow overlay
- */
 import {
   Show,
   children,
@@ -76,6 +61,22 @@ import {
   REVEAL_PREFIX,
   type EChartsAreaChartProps,
 } from "./types";
+
+/**
+ * Apache ECharts area chart for Solid.
+ *
+ * Ported from EvilCharts `src/registry/charts/echarts-area-chart.tsx` (MIT).
+ * Structurally the line chart's twin; see ../line-chart/line-chart.tsx for the
+ * shared React → Solid notes (`on()` on the init effect, `chartEpoch`,
+ * mergeProps instead of destructuring, kebab-case styles).
+ *
+ * What differs here:
+ * • stacking (`stackType`), including the mirror stacks that keep buffer /
+ *   reveal / mini layers from doubling the real stack's height
+ * • a controlled `selectedDataKey` prop
+ * • hover-highlight is POINTER-driven, not series-mouseover-driven — see below
+ * • no glow overlay
+ */
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 

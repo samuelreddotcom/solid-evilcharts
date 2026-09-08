@@ -15,6 +15,8 @@ const CHART_NOTES: Record<string, string> = {
   "/composed-chart": "Bars and lines together, with two glow strategies.",
   "/pie-chart": "Sector geometry, labels, 11 SVG background patterns.",
   "/radial-chart": "Polar bars, gauges, semi arcs, background tracks.",
+  "/radar-chart": "One polygon per series, grid shapes, fill opacity.",
+  "/sankey-chart": "Flow diagram with a column-by-column intro cascade.",
 };
 
 const PHASES = [
@@ -25,7 +27,7 @@ const PHASES = [
   { n: "4", name: "Shared primitives", done: true },
   { n: "5", name: "Line chart", done: true },
   { n: "6", name: "Area chart", done: true },
-  { n: "7", name: "Remaining charts — 4 of 6 done", done: false },
+  { n: "7", name: "Remaining charts — all 8 ported", done: true },
   { n: "8", name: "Registry / distribution", done: false },
   { n: "9", name: "Docs site", done: false },
   { n: "10", name: "TanStack Charts as a second engine", done: false },

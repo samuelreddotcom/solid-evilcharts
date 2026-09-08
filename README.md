@@ -27,8 +27,8 @@ plan and current phase.
 | 4 | Shared primitives (dot, tooltip, legend, brush) | ✅ done |
 | 5 | Line chart | ✅ done |
 | 6 | Area chart | ✅ done |
-| 7 | Remaining charts — bar ✅ composed ✅ pie ✅ radial ✅, 2 to go | 👈 in progress |
-| 8 | Registry / distribution | |
+| 7 | Remaining charts — all 8 ported ✅ |  |
+| 8 | Registry / distribution | 👈 next |
 | 9 | Docs site | |
 | 10 | TanStack Charts as a second engine | |
 

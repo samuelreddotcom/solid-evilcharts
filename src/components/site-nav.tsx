@@ -18,6 +18,8 @@ export const CHART_LINKS: NavItem[] = [
   { to: "/composed-chart", label: "Composed" },
   { to: "/pie-chart", label: "Pie" },
   { to: "/radial-chart", label: "Radial" },
+  { to: "/radar-chart", label: "Radar" },
+  { to: "/sankey-chart", label: "Sankey" },
 ];
 
 /** Not a chart — the vendored design-system component gallery. */

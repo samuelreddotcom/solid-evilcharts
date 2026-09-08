@@ -14,7 +14,7 @@ export function OnThisPage(props: { headings: DocsHeading[] }) {
   return (
     <Show when={props.headings.length > 0}>
       <nav class="hidden w-48 shrink-0 xl:block" aria-label="On this page">
-        <div class="sticky top-6">
+        <div class="sticky top-(--docs-sticky-top)">
           <p class="text-foreground mb-2 text-sm font-semibold">On this page</p>
           <ul class="space-y-1 text-sm">
             <For each={props.headings}>

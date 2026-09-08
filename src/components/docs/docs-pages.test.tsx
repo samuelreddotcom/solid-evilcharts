@@ -52,4 +52,31 @@ describe("docs pages", () => {
       host.remove();
     });
   }
+
+  it("keeps Shiki's own classes on highlighted code blocks", async () => {
+    // The dual-theme CSS hangs off `.shiki span`, and every token's colour
+    // lives in a --shiki-light/--shiki-dark custom property that nothing else
+    // reads. Drop the class and the code still renders — in the inherited body
+    // colour, looking plausibly unhighlighted, with no error anywhere.
+    //
+    // The way to lose it is `<pre {...props} class="…" />`: in Solid the later
+    // `class` overwrites the spread one rather than merging.
+    const page = DOCS_PAGES.find((p) => p.slug === "introduction")!;
+    const mod = await page.load();
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    const dispose = render(() => mod.default({ components: mdxComponents }), host);
+
+    const pres = [...host.querySelectorAll("pre")];
+    expect(pres.length).toBeGreaterThan(0);
+    expect(pres.some((el) => el.classList.contains("shiki"))).toBe(true);
+
+    // And the tokens must still carry both palettes.
+    const token = host.querySelector("pre span[style*='--shiki-light']");
+    expect(token).not.toBeNull();
+
+    dispose();
+    host.remove();
+  });
 });

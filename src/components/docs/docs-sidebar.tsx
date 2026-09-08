@@ -8,7 +8,7 @@ import { DOCS_PAGES } from "./docs-pages";
 export function DocsSidebar() {
   return (
     <nav class="hidden w-48 shrink-0 md:block" aria-label="Docs">
-      <ul class="sticky top-6 space-y-1 text-sm">
+      <ul class="sticky top-(--docs-sticky-top) space-y-1 text-sm">
         <For each={DOCS_PAGES}>
           {(page) => (
             <li>

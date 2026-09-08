@@ -229,6 +229,20 @@
   }
 }
 
+:root {
+  /*
+   * The site nav is `sticky top-0`, so anything else that sticks has to clear
+   * it or it scrolls underneath — which is what the docs sidebar and "On this
+   * page" rail were doing, clipping their own headings.
+   *
+   * The nav is text-xs (16px line) with py-2 (16px) plus a 1px border ≈ 33px;
+   * this adds ~23px of breathing room. Declared once so the two rails cannot
+   * drift apart. Heading anchors are handled separately by `scroll-m-20` in
+   * mdx-components.tsx, which is already larger than the nav.
+   */
+  --docs-sticky-top: 3.5rem;
+}
+
 /* ── Shiki, dual-theme ──────────────────────────────────────────────────────
  *
  * Highlighting runs at build time with `defaultColor: false`, so Shiki emits

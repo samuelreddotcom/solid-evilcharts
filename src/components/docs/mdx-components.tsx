@@ -24,9 +24,11 @@
  * No MDXProvider: `solid-mdx` is at 0.0.7 and unmaintained, and passing
  * `components` explicitly costs one prop at the single call site.
  */
-import { Show } from "solid-js";
+import { Show, splitProps } from "solid-js";
 import type { Component, JSX } from "solid-js";
 import { Dynamic } from "solid-js/web";
+
+import { cn } from "../../lib/cn";
 
 import { ComponentPreview } from "./component-preview";
 import { CopyButton } from "./copy-button";
@@ -65,81 +67,89 @@ function passthrough(tag: string): Component<Record<string, unknown>> {
   return (props) => <Dynamic component={tag} {...props} />;
 }
 
+/**
+ * Merge our styling with whatever class the markup already carried.
+ *
+ * `<pre {...props} class="…" />` looks harmless and is not: in Solid the later
+ * `class` REPLACES the spread one. For most markdown tags nothing arrives with
+ * a class and the bug is invisible — but Shiki puts `class="shiki shiki-themes
+ * min-light vesper"` on its <pre>, and the entire dual-theme colour scheme
+ * hangs off that `.shiki` selector. Losing it renders the block in the
+ * inherited body colour: no error, no warning, just uncoloured code that looks
+ * like it was never highlighted.
+ *
+ * Guarded by docs-pages.test.tsx.
+ */
+function styled<T extends HTMLElement>(
+  tag: string,
+  classes: string,
+): Component<Props<T>> {
+  return (props) => {
+    const [local, rest] = splitProps(props as { class?: string }, ["class"]);
+    return <Dynamic component={tag} {...rest} class={cn(classes, local.class)} />;
+  };
+}
+
 const STYLED: Record<string, Component<never>> = {
-  h1: (props: Props<HTMLHeadingElement>) => (
-    <h1 {...props} class="mt-2 mb-4 scroll-m-20 text-3xl font-semibold tracking-tight" />
+  h1: styled("h1", "mt-2 mb-4 scroll-m-20 text-3xl font-semibold tracking-tight"),
+  h2: styled(
+    "h2",
+    "border-border mt-10 mb-4 scroll-m-20 border-b pb-2 text-xl font-semibold tracking-tight",
   ),
-  h2: (props: Props<HTMLHeadingElement>) => (
-    <h2
-      {...props}
-      class="border-border mt-10 mb-4 scroll-m-20 border-b pb-2 text-xl font-semibold tracking-tight"
-    />
+  h3: styled("h3", "mt-8 mb-3 scroll-m-20 text-lg font-semibold tracking-tight"),
+  h4: styled("h4", "mt-6 mb-2 scroll-m-20 font-semibold tracking-tight"),
+  p: styled("p", "text-foreground/90 my-4 leading-7"),
+  a: styled("a", "text-primary font-medium underline underline-offset-4"),
+  strong: styled("strong", "font-semibold"),
+  ul: styled("ul", "my-4 ml-6 list-disc space-y-2"),
+  ol: styled("ol", "my-4 ml-6 list-decimal space-y-2"),
+  li: styled("li", "leading-7"),
+  blockquote: styled(
+    "blockquote",
+    "border-border text-muted-foreground my-6 border-l-2 pl-6 italic",
   ),
-  h3: (props: Props<HTMLHeadingElement>) => (
-    <h3 {...props} class="mt-8 mb-3 scroll-m-20 text-lg font-semibold tracking-tight" />
-  ),
-  h4: (props: Props<HTMLHeadingElement>) => (
-    <h4 {...props} class="mt-6 mb-2 scroll-m-20 font-semibold tracking-tight" />
-  ),
-  p: (props: Props<HTMLParagraphElement>) => (
-    <p {...props} class="text-foreground/90 my-4 leading-7" />
-  ),
-  a: (props: JSX.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <a {...props} class="text-primary font-medium underline underline-offset-4" />
-  ),
-  strong: (props: Props<HTMLElement>) => <strong {...props} class="font-semibold" />,
-  ul: (props: Props<HTMLUListElement>) => (
-    <ul {...props} class="my-4 ml-6 list-disc space-y-2" />
-  ),
-  ol: (props: Props<HTMLOListElement>) => (
-    <ol {...props} class="my-4 ml-6 list-decimal space-y-2" />
-  ),
-  li: (props: Props<HTMLLIElement>) => <li {...props} class="leading-7" />,
-  blockquote: (props: Props<HTMLQuoteElement>) => (
-    <blockquote
-      {...props}
-      class="border-border text-muted-foreground my-6 border-l-2 pl-6 italic"
-    />
-  ),
-  hr: (props: Props<HTMLHRElement>) => <hr {...props} class="border-border my-8" />,
-  img: (props: JSX.ImgHTMLAttributes<HTMLImageElement>) => (
-    <img {...props} class="border-border my-6 rounded-lg border" />
+  hr: styled("hr", "border-border my-8"),
+  img: styled("img", "border-border my-6 rounded-lg border"),
+  th: styled("th", "border-border border-b px-4 py-2 text-left font-semibold"),
+  td: styled("td", "border-border border-b px-4 py-2 align-top"),
+  code: styled(
+    "code",
+    "bg-muted rounded px-[0.3rem] py-[0.2rem] font-mono text-[0.85em] [pre_&]:bg-transparent [pre_&]:p-0",
   ),
 
   // Wide tables must scroll inside their own box, not push the page sideways.
-  table: (props: Props<HTMLTableElement>) => (
-    <div class="my-6 w-full overflow-x-auto">
-      <table {...props} class="w-full border-collapse text-sm" />
-    </div>
-  ),
-  th: (props: Props<HTMLTableCellElement>) => (
-    <th {...props} class="border-border border-b px-4 py-2 text-left font-semibold" />
-  ),
-  td: (props: Props<HTMLTableCellElement>) => (
-    <td {...props} class="border-border border-b px-4 py-2 align-top" />
-  ),
+  table: (props: Props<HTMLTableElement>) => {
+    const [local, rest] = splitProps(props as { class?: string }, ["class"]);
+    return (
+      <div class="my-6 w-full overflow-x-auto">
+        <table {...rest} class={cn("w-full border-collapse text-sm", local.class)} />
+      </div>
+    );
+  },
 
-  // Shiki already emits a styled <pre>; this only supplies the frame and the
-  // copy button. `data-code` carries the pre-highlight source — see the
-  // keep-source-for-copy transformer in plugins/mdx.ts.
-  pre: (props: Props<HTMLPreElement> & { "data-code"?: string }) => (
-    <div class="border-border relative my-6 overflow-hidden rounded-lg border">
-      <Show when={props["data-code"]}>
-        {(code) => (
-          <div class="absolute top-2 right-2 z-10">
-            <CopyButton value={code()} />
-          </div>
-        )}
-      </Show>
-      <pre {...props} class="overflow-x-auto text-sm" />
-    </div>
-  ),
-  code: (props: Props<HTMLElement>) => (
-    <code
-      {...props}
-      class="bg-muted rounded px-[0.3rem] py-[0.2rem] font-mono text-[0.85em] [pre_&]:bg-transparent [pre_&]:p-0"
-    />
-  ),
+  // Shiki already emits a fully styled <pre> — including the `.shiki` class the
+  // theme CSS keys off. This only adds the frame and the copy button, and must
+  // MERGE its classes rather than replace them. `data-code` carries the
+  // pre-highlight source; see the keep-source-for-copy transformer in
+  // plugins/mdx.ts.
+  pre: (props: Props<HTMLPreElement> & { "data-code"?: string }) => {
+    const [local, rest] = splitProps(props as { class?: string; "data-code"?: string }, [
+      "class",
+      "data-code",
+    ]);
+    return (
+      <div class="border-border relative my-6 overflow-hidden rounded-lg border">
+        <Show when={local["data-code"]}>
+          {(code) => (
+            <div class="absolute top-2 right-2 z-10">
+              <CopyButton value={code()} />
+            </div>
+          )}
+        </Show>
+        <pre {...rest} class={cn("overflow-x-auto text-sm", local.class)} />
+      </div>
+    );
+  },
 };
 
 export const mdxComponents: Record<string, Component<never>> = {

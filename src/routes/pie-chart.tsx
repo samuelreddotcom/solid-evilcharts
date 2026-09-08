@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { For, createSignal, type JSX } from "solid-js";
 
-import { EChartsPieChart } from "../charts/pie-chart";
-import type { BackgroundVariant, ChartConfig, EChartsRenderer } from "../charts/pie-chart";
+import { EChartsPieChart } from "../registry/charts/pie-chart";
+import type { BackgroundVariant, ChartConfig, EChartsRenderer } from "../registry/charts/pie-chart";
 import { Button } from "../components/ui/button";
 
 export const Route = createFileRoute("/pie-chart")({

@@ -1,14 +1,14 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { For, createSignal, type JSX } from "solid-js";
 
-import { EChartsBarChart } from "../charts/bar-chart";
+import { EChartsBarChart } from "../registry/charts/bar-chart";
 import type {
   BarLayout,
   BarVariant,
   ChartConfig,
   EChartsRenderer,
   StackType,
-} from "../charts/bar-chart";
+} from "../registry/charts/bar-chart";
 import { Button } from "../components/ui/button";
 
 export const Route = createFileRoute("/bar-chart")({

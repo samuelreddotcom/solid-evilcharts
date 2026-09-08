@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { For, createSignal, type JSX } from "solid-js";
 
-import { EChartsRadarChart } from "../charts/radar-chart";
-import type { ChartConfig, EChartsRenderer, GridType } from "../charts/radar-chart";
+import { EChartsRadarChart } from "../registry/charts/radar-chart";
+import type { ChartConfig, EChartsRenderer, GridType } from "../registry/charts/radar-chart";
 import { Button } from "../components/ui/button";
 
 export const Route = createFileRoute("/radar-chart")({

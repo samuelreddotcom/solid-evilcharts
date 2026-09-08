@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { For, createSignal, type JSX } from "solid-js";
 
-import { EChartsComposedChart } from "../charts/composed-chart";
-import type { BarVariant, ChartConfig, EChartsRenderer } from "../charts/composed-chart";
+import { EChartsComposedChart } from "../registry/charts/composed-chart";
+import type { BarVariant, ChartConfig, EChartsRenderer } from "../registry/charts/composed-chart";
 import { Button } from "../components/ui/button";
 
 export const Route = createFileRoute("/composed-chart")({

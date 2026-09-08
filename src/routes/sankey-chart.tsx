@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { For, createSignal, type JSX } from "solid-js";
 
-import { EChartsSankeyChart } from "../charts/sankey-chart";
+import { EChartsSankeyChart } from "../registry/charts/sankey-chart";
 import type {
   ChartConfig,
   EChartsRenderer,
   LinkVariant,
   SankeyData,
-} from "../charts/sankey-chart";
+} from "../registry/charts/sankey-chart";
 import { Button } from "../components/ui/button";
 
 export const Route = createFileRoute("/sankey-chart")({

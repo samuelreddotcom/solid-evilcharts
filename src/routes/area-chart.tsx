@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { For, createSignal, type JSX } from "solid-js";
 
-import { EChartsAreaChart } from "../charts/area-chart";
-import type { AreaVariant, ChartConfig, EChartsRenderer, StackType } from "../charts/area-chart";
+import { EChartsAreaChart } from "../registry/charts/area-chart";
+import type { AreaVariant, ChartConfig, EChartsRenderer, StackType } from "../registry/charts/area-chart";
 import { Button } from "../components/ui/button";
 
 export const Route = createFileRoute("/area-chart")({

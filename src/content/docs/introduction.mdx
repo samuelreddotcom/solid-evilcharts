@@ -13,10 +13,12 @@ SolidJS, built on Apache ECharts 6. It is a port of
 
 ## A live chart
 
-The component below is imported by this page and rendered inline, which is the
-whole reason for MDX rather than static HTML:
+Preview and source in one place. The Code tab shows the registry source — the
+exact bytes `shadcn add` writes into your project, not a hand-copied snippet:
 
-<LineChartDemo />
+<ComponentPreview files={["charts/line-chart/parts.tsx", "charts/line-chart/types.ts"]}>
+  <LineChartDemo />
+</ComponentPreview>
 
 ## What ships
 

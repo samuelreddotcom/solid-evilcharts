@@ -4,6 +4,7 @@ import { defineConfig } from "vitest/config";
 
 import { docsIndex } from "./src/plugins/docs-index.ts";
 import { mdxPlugin } from "./src/plugins/mdx.ts";
+import { shikiRaw } from "./src/plugins/shiki.ts";
 
 // Kept separate from vite.config.ts on purpose: the router plugin generates
 // routeTree.gen.ts and devtools inject a client runtime, neither of which
@@ -13,6 +14,7 @@ export default defineConfig({
   // plugin definition — see src/plugins/mdx.ts for why that sharing matters.
   plugins: [
     docsIndex(resolve(import.meta.dirname, "src/content/docs")),
+    shikiRaw(),
     mdxPlugin(),
     solid({ extensions: [".mdx"] }),
   ],

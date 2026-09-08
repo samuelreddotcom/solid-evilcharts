@@ -27,20 +27,34 @@
 import type { Component, JSX } from "solid-js";
 import { Dynamic } from "solid-js/web";
 
+import { ComponentPreview } from "./component-preview";
+
 type Props<T = HTMLElement> = JSX.HTMLAttributes<T> & { children?: JSX.Element };
 
 /**
- * Every HTML tag MDX can produce from CommonMark + GFM (tables, task lists,
- * strikethrough, footnotes). Anything here that isn't styled below still
- * renders — it just renders unstyled, which is a far better failure than a
- * white screen.
+ * Every HTML tag an MDX page can ask for. Anything here that isn't styled below
+ * still renders — just unstyled, which is a far better failure than a white
+ * screen.
+ *
+ * This is deliberately WIDER than markdown's own element set, because rehype
+ * plugins inject their own: rehype-shiki turns every fenced block into nested
+ * `<span>`s, and a `<span>` missing from this list is a runtime crash on any
+ * page with a code block. Assume the next plugin does something similar.
+ * `mdx-tags.test.ts` compiles each page and checks this list against what the
+ * page actually asks for, so the failure is a clear message rather than
+ * "Comp is not a function".
  */
 const MDX_TAGS = [
+  // markdown + GFM
   "a", "blockquote", "br", "code", "del", "em",
   "h1", "h2", "h3", "h4", "h5", "h6",
   "hr", "img", "input", "li", "ol", "p", "pre",
   "section", "strong", "sup",
   "table", "tbody", "td", "th", "thead", "tr", "ul",
+  // injected by rehype plugins, or usable directly in a page's own JSX
+  "span", "div", "sub", "small", "kbd", "mark", "abbr", "b", "i", "s", "u",
+  "dl", "dt", "dd", "details", "summary", "figure", "figcaption",
+  "picture", "source", "video", "iframe",
 ] as const;
 
 /** A component that renders the tag itself — the safety net, not the styling. */
@@ -117,6 +131,8 @@ const STYLED: Record<string, Component<never>> = {
 };
 
 export const mdxComponents: Record<string, Component<never>> = {
+  // Available in every .mdx page without an import line.
+  ComponentPreview: ComponentPreview as unknown as Component<never>,
   ...(Object.fromEntries(MDX_TAGS.map((tag) => [tag, passthrough(tag)])) as Record<
     string,
     Component<never>

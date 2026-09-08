@@ -7,6 +7,7 @@ import solid from "vite-plugin-solid";
 
 import { docsIndex } from "./src/plugins/docs-index.ts";
 import { mdxPlugin } from "./src/plugins/mdx.ts";
+import { shikiRaw } from "./src/plugins/shiki.ts";
 
 // `command` is "serve" during `vite` (dev) and "build" during `vite build`.
 // Code-splitting routes breaks solid HMR (each route becomes a ?tsr-split
@@ -21,6 +22,7 @@ export default defineConfig(({ command }) => ({
       target: "solid",
       autoCodeSplitting: command === "build",
     }),
+    shikiRaw(),
     mdxPlugin(),
     solid({ extensions: [".mdx"] }),
   ],

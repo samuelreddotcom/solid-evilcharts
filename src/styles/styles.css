@@ -228,3 +228,43 @@
     color: var(--selection-foreground);
   }
 }
+
+/* ── Shiki, dual-theme ──────────────────────────────────────────────────────
+ *
+ * Highlighting runs at build time with `defaultColor: false`, so Shiki emits
+ * BOTH palettes as custom properties on every token —
+ *
+ *   <span style="--shiki-light:#D32F2F;--shiki-dark:#A0A0A0">
+ *
+ * — and nothing picks between them. Without the rules below the code renders
+ * in the inherited body colour and looks plausibly, silently unhighlighted.
+ *
+ * `.dark` is the project's theme selector (the chart code hardcodes it too),
+ * so the same class drives code blocks and charts.
+ */
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+
+/* Shiki wraps everything in its own <pre>; give it the page's chrome and let
+   long lines scroll rather than wrap, which keeps column alignment readable. */
+.shiki {
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.shiki code {
+  display: block;
+  width: fit-content;
+  min-width: 100%;
+}

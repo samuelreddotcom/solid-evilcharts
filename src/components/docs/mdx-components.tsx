@@ -30,9 +30,13 @@ import { Dynamic } from "solid-js/web";
 
 import { cn } from "../../lib/cn";
 
+import { ApiHeading, ApiRow, ApiTable } from "./api-table";
+import { Callout } from "./callout";
+import { CommandBlock } from "./command-block";
 import { ComponentPreview } from "./component-preview";
 import { CopyButton } from "./copy-button";
-import { InstallTabs } from "./install-tabs";
+import { SourceBlock } from "./source-block";
+import { Step, StepContent, StepDescription, StepTitle, Steps } from "./steps";
 
 type Props<T = HTMLElement> = JSX.HTMLAttributes<T> & { children?: JSX.Element };
 
@@ -153,9 +157,22 @@ const STYLED: Record<string, Component<never>> = {
 };
 
 export const mdxComponents: Record<string, Component<never>> = {
-  // Available in every .mdx page without an import line.
-  ComponentPreview: ComponentPreview as unknown as Component<never>,
-  InstallTabs: InstallTabs as unknown as Component<never>,
+  // Available in every .mdx page without an import line. The casts are because
+  // the map is typed for HTML tags; these take their own props.
+  ...({
+    ApiHeading,
+    ApiRow,
+    ApiTable,
+    Callout,
+    CommandBlock,
+    ComponentPreview,
+    SourceBlock,
+    Step,
+    StepContent,
+    StepDescription,
+    StepTitle,
+    Steps,
+  } as unknown as Record<string, Component<never>>),
   ...(Object.fromEntries(MDX_TAGS.map((tag) => [tag, passthrough(tag)])) as Record<
     string,
     Component<never>

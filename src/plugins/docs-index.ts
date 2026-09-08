@@ -29,6 +29,10 @@ export type DocsIndexEntry = {
   slug: string;
   title: string;
   description?: string;
+  /** Sidebar position. Pages without one sort last, alphabetically. */
+  order: number;
+  /** Sidebar section heading. Ungrouped pages sit above every group. */
+  group?: string;
   /** Path relative to the project root, so the lazy glob can key off it. */
   path: string;
   headings: DocsHeading[];
@@ -73,19 +77,25 @@ export function docsIndex(contentDir: string): Plugin {
   const root = resolve(contentDir);
 
   function build(): DocsIndexEntry[] {
-    return walk(root)
-      .map((file) => {
-        const { data, content } = matter(readFileSync(file, "utf8"));
-        const slug = relative(root, file).replace(/\.mdx$/, "");
-        return {
-          slug,
-          title: typeof data.title === "string" ? data.title : slug,
-          description: typeof data.description === "string" ? data.description : undefined,
-          path: file,
-          headings: headingsOf(content),
-        };
-      })
-      .sort((a, b) => a.slug.localeCompare(b.slug));
+    return (
+      walk(root)
+        .map((file) => {
+          const { data, content } = matter(readFileSync(file, "utf8"));
+          const slug = relative(root, file).replace(/\.mdx$/, "");
+          return {
+            slug,
+            title: typeof data.title === "string" ? data.title : slug,
+            description: typeof data.description === "string" ? data.description : undefined,
+            order: typeof data.order === "number" ? data.order : Number.MAX_SAFE_INTEGER,
+            group: typeof data.group === "string" ? data.group : undefined,
+            path: file,
+            headings: headingsOf(content),
+          };
+        })
+        // Explicit `order` first, alphabetical for anything that forgot one, so a
+        // new page appears somewhere sensible rather than vanishing to the end.
+        .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
+    );
   }
 
   return {
@@ -93,7 +103,27 @@ export function docsIndex(contentDir: string): Plugin {
     resolveId: (id) => (id === VIRTUAL_ID ? RESOLVED_ID : undefined),
     load(id) {
       if (id !== RESOLVED_ID) return;
-      return `export const DOCS_INDEX = ${JSON.stringify(build())};`;
+      const entries = build();
+      // DOCS_LOADERS is emitted here, next to the metadata, rather than left to
+      // an `import.meta.glob` in a consumer module. That is not tidiness.
+      //
+      // Vitest runs with `fsModuleCache: true`. A glob is baked in at transform
+      // time, so a module containing one keeps its cached transform until that
+      // module's own source changes — and adding a .mdx file does not change
+      // it. The cached glob then has no entry for the new page while this
+      // virtual module, rebuilt every run, does. The two disagree and the docs
+      // registry throws "no lazy loader" until someone clears
+      // node_modules/.vitest-cache. Cost an hour to find once.
+      //
+      // Emitting the imports here makes the generated code itself change when
+      // the page set changes, so any cache keyed on it is invalidated for free.
+      const loaders = entries
+        .map((e) => `  ${JSON.stringify(e.slug)}: () => import(${JSON.stringify(e.path)}),`)
+        .join("\n");
+      return [
+        `export const DOCS_INDEX = ${JSON.stringify(entries)};`,
+        `export const DOCS_LOADERS = {\n${loaders}\n};`,
+      ].join("\n");
     },
     hotUpdate({ file, server }) {
       if (!file.endsWith(".mdx")) return;

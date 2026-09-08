@@ -61,22 +61,26 @@ describe("docs pages", () => {
     //
     // The way to lose it is `<pre {...props} class="…" />`: in Solid the later
     // `class` overwrites the spread one rather than merging.
-    const page = DOCS_PAGES.find((p) => p.slug === "introduction")!;
-    const mod = await page.load();
+    //
+    // Scans every page rather than naming one, because "the page with a code
+    // block on it" is exactly the sort of thing that moves.
+    let highlighted = 0;
+    let tokens = 0;
 
-    const host = document.createElement("div");
-    document.body.append(host);
-    const dispose = render(() => mod.default({ components: mdxComponents }), host);
+    for (const page of DOCS_PAGES) {
+      const mod = await page.load();
+      const host = document.createElement("div");
+      document.body.append(host);
+      const dispose = render(() => mod.default({ components: mdxComponents }), host);
 
-    const pres = [...host.querySelectorAll("pre")];
-    expect(pres.length).toBeGreaterThan(0);
-    expect(pres.some((el) => el.classList.contains("shiki"))).toBe(true);
+      highlighted += host.querySelectorAll("pre.shiki").length;
+      tokens += host.querySelectorAll("pre span[style*='--shiki-light']").length;
 
-    // And the tokens must still carry both palettes.
-    const token = host.querySelector("pre span[style*='--shiki-light']");
-    expect(token).not.toBeNull();
+      dispose();
+      host.remove();
+    }
 
-    dispose();
-    host.remove();
-  });
+    expect(highlighted).toBeGreaterThan(0);
+    expect(tokens).toBeGreaterThan(0);
+  }, 30_000);
 });

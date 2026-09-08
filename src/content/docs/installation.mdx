@@ -1,0 +1,118 @@
+---
+title: Installation
+description: Get a chart into a SolidJS project.
+order: 2
+---
+
+# Installation
+
+Charts are distributed the way shadcn/ui components are: the CLI copies source
+files into your project, and from then on they are yours to edit. There is no
+runtime package to depend on and no version to keep in step.
+
+<Callout variant="warn" title="Do not run `shadcn init`">
+  The shadcn CLI's `init` command is React-only. In a Solid project it installs
+  `@base-ui/react`, `lucide-react` and friends, rewrites your Tailwind CSS file,
+  and **overwrites `src/lib/utils.ts`**. Write `components.json` by hand
+  instead — step 2 below. Everything after `init` works fine on Solid.
+</Callout>
+
+## Steps
+
+<Steps>
+  <Step>
+    <StepTitle>Install Apache ECharts</StepTitle>
+    <StepContent>
+      <StepDescription>
+        The only runtime dependency the charts have. Everything else they use is
+        Solid itself.
+      </StepDescription>
+      <CommandBlock packages={["echarts"]} />
+    </StepContent>
+  </Step>
+
+  <Step>
+    <StepTitle>Add a components.json</StepTitle>
+    <StepContent>
+      <StepDescription>
+        The CLI needs this file to know where things go. `style` is required —
+        omit it and `add` fails with a message that names no field. The
+        `registries` entry is what makes `@solid-foundation/…` resolve here
+        rather than against ui.shadcn.com.
+      </StepDescription>
+
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "tsx": true,
+  "rsc": false,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/app.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "aliases": {
+    "components": "~/components",
+    "utils": "~/lib/utils",
+    "ui": "~/components/ui",
+    "lib": "~/lib",
+    "hooks": "~/hooks"
+  },
+  "registries": {
+    "@solid-foundation": "https://example.com/r/{name}.json"
+  }
+}
+```
+
+  <StepDescription>
+    Match `aliases` to your own `tsconfig.json` paths. The examples above assume
+    `~/*` → `./src/*`; if you use `@/*`, say so here.
+  </StepDescription>
+    </StepContent>
+  </Step>
+
+  <Step>
+    <StepTitle>Add a chart</StepTitle>
+    <StepContent>
+      <StepDescription>
+        Replace `line-chart` with any chart name. Installing one pulls in the
+        shared modules it imports and nothing else.
+      </StepDescription>
+      <CommandBlock registryItem="line-chart" />
+    </StepContent>
+  </Step>
+</Steps>
+
+## What lands in your project
+
+```
+src/components/solid-charts/
+  lib/            shared primitives — tokens, slots, tooltip, legend, dots, brush
+  charts/
+    line-chart/   types · parts · options · line-chart · index
+```
+
+The two directories keep their relative depth on purpose: the chart files import
+the shared ones as `../../lib/…`, and that resolves in your project exactly as it
+does in ours. Move one without the other and the imports break.
+
+## Which renderer
+
+Charts use ECharts' Canvas renderer by default, because several of the looks —
+pattern fills, glow shadows, gradient strokes — are canvas operations. Every
+chart root also takes `renderer="svg"`:
+
+```tsx
+<EChartsLineChart data={data} config={config} xDataKey="month">
+  {/* canvas, the default */}
+</EChartsLineChart>
+
+<EChartsLineChart data={data} config={config} xDataKey="month" renderer="svg">
+  {/* SVG — crisper text, selectable, no canvas needed */}
+</EChartsLineChart>
+```
+
+SVG is the better choice for tests and for server-rendered pages; Canvas is the
+better choice when a chart has many points or uses the decorative fills.

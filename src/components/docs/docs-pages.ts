@@ -1,46 +1,38 @@
 /**
  * The docs page registry.
  *
- * Titles come from `virtual:docs-index` (frontmatter read off disk at build
- * time — see src/plugins/docs-index.ts); bodies come from a lazy glob. Keeping
- * those two separate is the whole point: importing a page to read its title
- * would drag its charts into the entry chunk.
+ * Both halves come from `virtual:docs-index`: titles and headings read off disk
+ * at build time, and a lazy `import()` per page. They stay lazy on purpose —
+ * importing a page to read its title would drag its charts into the entry
+ * chunk, which Rollup will tell you about as INEFFECTIVE_DYNAMIC_IMPORT.
  */
-import { DOCS_INDEX } from "virtual:docs-index";
+import { DOCS_INDEX, DOCS_LOADERS } from "virtual:docs-index";
 import type { DocsHeading } from "virtual:docs-index";
 import type { Component } from "solid-js";
 
 type LazyModule = { default: Component<{ components?: Record<string, unknown> }> };
 
-const LAZY = import.meta.glob<LazyModule>("../../content/docs/**/*.mdx");
-
-/** The glob keys are project-relative; the index carries absolute paths. */
-function loaderFor(absolutePath: string): (() => Promise<LazyModule>) | undefined {
-  const match = Object.keys(LAZY).find((key) =>
-    absolutePath.endsWith(key.replace(/^(\.\.\/)+/, "").replace(/^src\//, "")),
-  );
-  return match ? LAZY[match] : undefined;
-}
-
 export type DocsPage = {
   slug: string;
   title: string;
   description?: string;
+  order: number;
+  group?: string;
   headings: DocsHeading[];
   load: () => Promise<LazyModule>;
 };
 
 export const DOCS_PAGES: DocsPage[] = DOCS_INDEX.map((entry) => {
-  const load = loaderFor(entry.path);
-  if (!load) {
-    // The plugin and the glob read the same directory, so this only fires if
-    // the two patterns drift. Fail loudly rather than render a blank page.
-    throw new Error(`docs: no lazy loader for ${entry.path}`);
-  }
+  // Metadata and loader are emitted together by the same plugin pass, so this
+  // cannot miss — see the note in src/plugins/docs-index.ts about why that
+  // matters more than it looks.
+  const load = DOCS_LOADERS[entry.slug] as () => Promise<LazyModule>;
   return {
     slug: entry.slug,
     title: entry.title,
     description: entry.description,
+    order: entry.order,
+    group: entry.group,
     headings: entry.headings,
     load,
   };
@@ -48,4 +40,22 @@ export const DOCS_PAGES: DocsPage[] = DOCS_INDEX.map((entry) => {
 
 export function findDocsPage(slug: string): DocsPage | undefined {
   return DOCS_PAGES.find((p) => p.slug === slug);
+}
+
+export type DocsSection = { group?: string; pages: DocsPage[] };
+
+/**
+ * DOCS_PAGES in sidebar order, split into sections.
+ *
+ * Sections appear in the order their first page does, so a group's position is
+ * just its lowest `order` — there is no second ordering to keep in sync.
+ */
+export function docsSections(): DocsSection[] {
+  const sections: DocsSection[] = [];
+  for (const page of DOCS_PAGES) {
+    const last = sections.at(-1);
+    if (last && last.group === page.group) last.pages.push(page);
+    else sections.push({ group: page.group, pages: [page] });
+  }
+  return sections;
 }

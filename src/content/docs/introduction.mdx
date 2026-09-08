@@ -1,6 +1,7 @@
 ---
 title: Introduction
 description: What this library is, and who should use it.
+order: 1
 ---
 
 import { LineChartDemo } from "./_demos/line-chart-demo";
@@ -37,34 +38,7 @@ renderer, and every chart takes a `renderer` prop, so you can choose per chart.
 
 ## Installing
 
-<InstallTabs item="line-chart" />
+<CommandBlock registryItem="line-chart" />
 
-Point the CLI at the registry first, in `components.json`. **Do not run
-`shadcn init`** — it is React-only and will install `@base-ui/react`,
-`lucide-react` and friends into a Solid project, and overwrite your
-`src/lib/utils.ts`. Write the file by hand instead:
-
-```json
-{
-  "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "default",
-  "tsx": true,
-  "rsc": false,
-  "tailwind": {
-    "config": "",
-    "css": "src/styles/app.css",
-    "baseColor": "neutral",
-    "cssVariables": true
-  },
-  "aliases": {
-    "components": "~/components",
-    "utils": "~/lib/utils",
-    "ui": "~/components/ui",
-    "lib": "~/lib",
-    "hooks": "~/hooks"
-  },
-  "registries": {
-    "@solid-foundation": "https://example.com/r/{name}.json"
-  }
-}
-```
+See [Installation](/docs/installation) for the `components.json` the CLI needs,
+and why you should not run `shadcn init` in a Solid project.

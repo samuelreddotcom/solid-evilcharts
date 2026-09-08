@@ -1,0 +1,128 @@
+---
+title: Chart config
+description: Labels, theme-aware colours, and icons for each data series.
+order: 3
+---
+
+# Chart config
+
+Every chart takes a `config` object alongside its `data`. It maps each data key
+to how that series should be presented — its label, its colours per theme, and
+an optional icon.
+
+## Structure
+
+```tsx
+import type { ChartConfig } from "~/components/solid-charts/lib/chart-tokens";
+
+const config: ChartConfig = {
+  desktop: {
+    label: "Desktop",
+    colors: { light: ["#047857"], dark: ["#10b981"] },
+  },
+  mobile: {
+    label: "Mobile",
+    colors: { light: ["#be123c"], dark: ["#f43f5e"] },
+  },
+};
+```
+
+Each key must match a key in your dataset. The type is:
+
+```ts
+type ChartConfig = Record<
+  string,
+  {
+    label?: JSX.Element;
+    icon?: Component;
+    colors?:
+      | { light: string[]; dark?: string[] }
+      | { light?: string[]; dark: string[] };
+  }
+>;
+```
+
+<Callout>
+  `label` is a Solid `JSX.Element` and `icon` a Solid `Component` — not React's
+  `ReactNode` / `ComponentType`. They are types only and vanish at runtime, but
+  it does mean a React icon component will not work here. Use `lucide-solid`.
+</Callout>
+
+## Properties
+
+<ApiTable>
+  <ApiRow name="label" type="JSX.Element">
+    Shown in tooltips and legends. A string is the common case, but any Solid
+    element works.
+  </ApiRow>
+  <ApiRow name="colors" type="{ light?: string[]; dark?: string[] }">
+    Theme-aware colours. At least one of `light` / `dark` is required when
+    `colors` is present. More than one colour per theme produces a gradient.
+  </ApiRow>
+  <ApiRow name="icon" type="Component">
+    Replaces the colour indicator in tooltips and legends. Useful when colour
+    alone does not distinguish two series.
+  </ApiRow>
+</ApiTable>
+
+### colors
+
+One colour per theme gives a solid fill:
+
+```tsx
+colors: {
+  light: ["#047857"],
+  dark: ["#10b981"],
+}
+```
+
+An array produces a gradient across bars, areas, and other filled shapes:
+
+```tsx
+colors: {
+  light: ["#a855f7", "#6366f1", "#3b82f6"],
+  dark: ["#f43f5e", "#ec4899", "#a855f7", "#6366f1", "#3b82f6"],
+}
+```
+
+The two themes may declare different counts. The chart allocates slots from the
+longest array across themes, and distributes a shorter one into them by giving
+the extra slots to the **last** colours — two colours across four slots become
+`[c0, c0, c1, c1]`, three become `[c0, c1, c2, c2]`. Both themes therefore always
+emit the same number of variables, so switching theme never leaves a slot
+undefined.
+
+### Omitting colours
+
+A series with no `colors` still renders; it falls back to a neutral. That is the
+intended way to grey out a series you want present but not emphasised.
+
+## How colours reach the chart
+
+The config is compiled to CSS custom properties scoped to the individual chart
+instance, keyed by its `data-chart` id:
+
+```css
+[data-chart=chart-r1] {
+  --color-desktop-0: #a855f7;
+  --color-desktop-1: #6366f1;
+}
+
+.dark [data-chart=chart-r1] {
+  --color-desktop-0: #f43f5e;
+  --color-desktop-1: #ec4899;
+}
+```
+
+Scoping to the instance rather than the document is what lets two charts on one
+page use the same series key with different palettes.
+
+<Callout variant="warn" title="The dark selector is `.dark`, and that is load-bearing">
+  The generated CSS emits `.dark [data-chart=…]`, which must match the
+  `@custom-variant dark (&:is(.dark *))` in your stylesheet. If your app toggles
+  dark mode some other way — a `data-theme` attribute, say — the chart colours
+  will not follow it. A test in this repo guards the pair.
+</Callout>
+
+Because the values are ordinary CSS variables, anything CSS can express works:
+`var(--chart-1)` to inherit your existing palette, `oklch(…)`, or a plain hex.

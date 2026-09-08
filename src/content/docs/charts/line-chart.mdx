@@ -1,0 +1,187 @@
+---
+title: Line chart
+description: Strokes, dots, a zoom brush, glow, and hover reveal — on Apache ECharts.
+order: 10
+group: Charts
+---
+
+import { LineChartDemo } from "../_demos/line-chart-demo";
+
+# Line chart
+
+<ComponentPreview files={["charts/line-chart/line-chart.tsx", "charts/line-chart/parts.tsx", "charts/line-chart/types.ts", "charts/line-chart/options.ts"]}>
+  <LineChartDemo />
+</ComponentPreview>
+
+## Installation
+
+<CommandBlock registryItem="line-chart" />
+
+That pulls in the shared `lib/` modules the chart imports. If you would rather
+paste the files yourself, they are below — keep the two directories at the same
+relative depth, because the chart imports the shared code as `../../lib/…`.
+
+<SourceBlock file="charts/line-chart/index.ts" />
+
+## Usage
+
+```tsx
+import { EChartsLineChart } from "~/components/solid-charts/charts/line-chart";
+import type { ChartConfig } from "~/components/solid-charts/lib/chart-tokens";
+
+const data = [
+  { month: "January", desktop: 186, mobile: 80 },
+  { month: "February", desktop: 305, mobile: 200 },
+];
+
+const config: ChartConfig = {
+  desktop: { label: "Desktop", colors: { light: ["#047857"], dark: ["#10b981"] } },
+  mobile: { label: "Mobile", colors: { light: ["#be123c"], dark: ["#f43f5e"] } },
+};
+
+<EChartsLineChart data={data} config={config} xDataKey="month">
+  <EChartsLineChart.Grid />
+  <EChartsLineChart.XAxis dataKey="month" tickFormatter={(v) => v.slice(0, 3)} />
+  <EChartsLineChart.YAxis />
+  <EChartsLineChart.Tooltip />
+  <EChartsLineChart.Legend isClickable />
+  <EChartsLineChart.Line dataKey="desktop">
+    <EChartsLineChart.Dot variant="border" />
+    <EChartsLineChart.ActiveDot variant="colored-border" />
+  </EChartsLineChart.Line>
+</EChartsLineChart>
+```
+
+<Callout title="The children are configuration, not output">
+  Every part — `<Line>`, `<XAxis>`, `<Grid>` — renders nothing. Its presence and
+  its props *are* the config: omit `<YAxis>` and there is no y-axis. The root
+  reads them once and builds a single ECharts option from the result.
+
+  One consequence worth knowing: because a part is read rather than rendered,
+  you cannot wrap one in a plain `{condition && …}` and expect it to disappear
+  reactively. Use `<Show>`, which the parser resolves.
+</Callout>
+
+## Root props
+
+<ApiTable>
+  <ApiRow name="data" type="TData[]" required>Rows to plot.</ApiRow>
+  <ApiRow name="config" type="ChartConfig" required>
+    Series labels and colours. See [Chart config](/docs/chart-config).
+  </ApiRow>
+  <ApiRow name="xDataKey" type="string">
+    The category key. Falls back to `<XAxis dataKey>`, then the first column not
+    claimed by a series.
+  </ApiRow>
+  <ApiRow name="renderer" type='"canvas" | "svg"' default='"canvas"'>
+    ECharts rendering engine.
+  </ApiRow>
+  <ApiRow name="curveType" type="CurveType" default='"linear"'>
+    Default interpolation each `<Line>` inherits.
+  </ApiRow>
+  <ApiRow name="animation" type="boolean" default="true">
+    Master switch for the intro draw-in. `false` renders instantly.
+  </ApiRow>
+  <ApiRow name="animationType" type="LineAnimationType" default='"left-to-right"'>
+    Default intro reveal. The first `<Line>` drives the wrapper wipe.
+  </ApiRow>
+  <ApiRow name="enableHoverHighlight" type="boolean" default="false">
+    Hovering a series dims the others, like a temporary selection.
+  </ApiRow>
+  <ApiRow name="enableHoverReveal" type="boolean" default="false">
+    Hovering colours each line up to the pointer's x and mutes the rest.
+  </ApiRow>
+  <ApiRow name="defaultSelectedDataKey" type="string | null" default="null">
+    Series selected on first render.
+  </ApiRow>
+  <ApiRow name="onSelectionChange" type="(key: string | null) => void">
+    Fires when the selected series changes.
+  </ApiRow>
+  <ApiRow name="isLoading" type="boolean" default="false">
+    Shows the animated loading skeleton.
+  </ApiRow>
+  <ApiRow name="loadingPoints" type="number" default="14">
+    Number of points in that skeleton.
+  </ApiRow>
+  <ApiRow name="chartOptions" type="Record<string, unknown>">
+    Escape hatch, merged over the built ECharts option. Use it for anything this
+    API does not expose.
+  </ApiRow>
+  <ApiRow name="class" type="string">Extra classes for the container.</ApiRow>
+</ApiTable>
+
+## Parts
+
+<ApiHeading>&lt;Line&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="dataKey" type="string" required>
+    Series key. Must exist on both the data and the config.
+  </ApiRow>
+  <ApiRow name="strokeVariant" type='"solid" | "dashed" | "animated-dashed"' default='"solid"' />
+  <ApiRow name="strokeWidth" type="number" default="0.8" />
+  <ApiRow name="curveType" type="CurveType">Falls back to the root `curveType`.</ApiRow>
+  <ApiRow name="animationType" type="LineAnimationType" />
+  <ApiRow name="connectNulls" type="boolean" default="false">
+    Join segments across null or missing values.
+  </ApiRow>
+  <ApiRow name="isClickable" type="boolean" default="false">
+    Lets this line be selected by clicking it.
+  </ApiRow>
+  <ApiRow name="glowing" type="boolean" default="false">Soft outer glow.</ApiRow>
+  <ApiRow name="enableBufferLine" type="boolean" default="false">
+    Renders the last segment as a dashed buffer — for a trailing forecast or an
+    incomplete final period.
+  </ApiRow>
+</ApiTable>
+
+<ApiHeading>&lt;Dot&gt; and &lt;ActiveDot&gt;</ApiHeading>
+
+Nested inside a `<Line>`. `<Dot>` is the resting marker, `<ActiveDot>` the one
+under the pointer. Omitting the element entirely is `variant="none"`; including
+it without a variant is `"default"` — presence is the switch.
+
+<ApiTable>
+  <ApiRow name="variant" type='"none" | "default" | "border" | "colored-border" | "ping"' default='"default"'>
+    `ping` draws a pulsing halo at a flat 28% alpha, regardless of the line's own.
+  </ApiRow>
+</ApiTable>
+
+<ApiHeading>&lt;XAxis&gt; and &lt;YAxis&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="dataKey" type="string">On `<XAxis>`, overrides the root `xDataKey`.</ApiRow>
+  <ApiRow name="tickFormatter" type="(value, index) => string">
+    `<XAxis>` receives a **string** — category values are always stringified —
+    while `<YAxis>` receives a number.
+  </ApiRow>
+  <ApiRow name="label" type="string">Axis title, centred beyond the tick labels.</ApiRow>
+  <ApiRow name="hideDots" type="boolean" default="false">Hides the tick dots.</ApiRow>
+</ApiTable>
+
+<ApiHeading>&lt;Tooltip&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="variant" type="TooltipVariant" default='"default"' />
+  <ApiRow name="roundness" type="TooltipRoundness" default='"lg"' />
+  <ApiRow name="cursor" type="boolean" default="true">
+    Whether the vertical cursor line follows the pointer.
+  </ApiRow>
+  <ApiRow name="position" type="TooltipPosition" default='"variable"' />
+</ApiTable>
+
+<ApiHeading>&lt;Legend&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="variant" type="LegendVariant" default='"rounded-square"' />
+  <ApiRow name="align" type='"left" | "center" | "right"' default='"right"' />
+  <ApiRow name="verticalAlign" type='"top" | "middle" | "bottom"' default='"top"' />
+  <ApiRow name="isClickable" type="boolean" default="false">
+    Lets each entry toggle selection of its series.
+  </ApiRow>
+</ApiTable>
+
+<ApiHeading>&lt;Grid&gt; and &lt;Brush&gt;</ApiHeading>
+
+`<Grid>` takes no props — its presence draws the background grid. `<Brush>`
+adds the zoom strip below the chart.

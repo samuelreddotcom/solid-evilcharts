@@ -1,0 +1,84 @@
+---
+title: Radar chart
+description: One polygon per series, with polygon or circular grids.
+order: 16
+group: Charts
+---
+
+import { RadarChartDemo } from "../_demos/radar-chart-demo";
+
+# Radar chart
+
+<ComponentPreview files={["charts/radar-chart/radar-chart.tsx", "charts/radar-chart/parts.tsx", "charts/radar-chart/types.ts"]}>
+  <RadarChartDemo />
+</ComponentPreview>
+
+## Installation
+
+<CommandBlock registryItem="radar-chart" />
+
+## Usage
+
+<Callout title="Rows are axes, not points">
+  On a line chart each row is a point along the x-axis. On a radar each **row
+  is one spoke** of the web, and each series becomes a single closed polygon
+  spanning every spoke. So there is no `xDataKey` here: the angle-axis
+  categories come from the rows themselves, and `<PolarAngleAxis dataKey>`
+  only overrides which column labels them.
+</Callout>
+
+```tsx
+<EChartsRadarChart data={data} config={config}>
+  <EChartsRadarChart.PolarGrid gridType="polygon" />
+  <EChartsRadarChart.PolarAngleAxis dataKey="month" />
+  <EChartsRadarChart.Tooltip />
+  <EChartsRadarChart.Legend />
+  <EChartsRadarChart.Radar dataKey="desktop">
+    <EChartsRadarChart.Dot variant="border" />
+  </EChartsRadarChart.Radar>
+</EChartsRadarChart>
+```
+
+## Root props
+
+<ApiTable>
+  <ApiRow name="data" type="TData[]" required>Each row is one angle-axis category.</ApiRow>
+  <ApiRow name="config" type="ChartConfig" required />
+  <ApiRow name="renderer" type='"canvas" | "svg"' default='"canvas"' />
+  <ApiRow name="animation" type="boolean" default="true" />
+  <ApiRow name="defaultSelectedDataKey" type="string | null" default="null" />
+  <ApiRow name="onSelectionChange" type="(key: string | null) => void" />
+  <ApiRow name="isLoading" type="boolean" default="false" />
+  <ApiRow name="loadingPoints" type="number" default="6" />
+  <ApiRow name="chartOptions" type="Record<string, unknown>" />
+  <ApiRow name="class" type="string" />
+</ApiTable>
+
+## Parts
+
+<ApiHeading>&lt;Radar&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="dataKey" type="string" required />
+  <ApiRow name="variant" type='"filled" | "lines"' default='"filled"'>
+    `lines` draws the outline only.
+  </ApiRow>
+  <ApiRow name="fillOpacity" type="number" default="0.3" />
+  <ApiRow name="isClickable" type="boolean" default="false" />
+</ApiTable>
+
+<ApiHeading>&lt;PolarGrid&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="gridType" type='"polygon" | "circle"' default='"polygon"' />
+</ApiTable>
+
+<ApiHeading>&lt;PolarAngleAxis&gt; and &lt;PolarRadiusAxis&gt;</ApiHeading>
+
+`<PolarAngleAxis>` labels the perimeter; `dataKey` overrides which column is
+used. `<PolarRadiusAxis>` takes no props — its presence shows the radial scale.
+
+<ApiHeading>&lt;Dot&gt;, &lt;ActiveDot&gt;, &lt;Tooltip&gt;, &lt;Legend&gt;</ApiHeading>
+
+Dots nest inside a `<Radar>` as they do inside a `<Line>`. The legend defaults
+to below the chart, centred.

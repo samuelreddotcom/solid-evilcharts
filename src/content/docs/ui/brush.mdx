@@ -1,0 +1,43 @@
+---
+title: Brush
+description: The zoom strip below a cartesian chart.
+order: 23
+group: Shared parts
+---
+
+# Brush
+
+`<Brush>` adds a range strip below the chart. Drag its handles to zoom the main
+plot. Available on the line, area, bar and composed charts.
+
+```tsx
+<EChartsLineChart.Brush
+  height={64}
+  formatLabel={(value) => value.slice(0, 3)}
+  onChange={({ startIndex, endIndex }) => console.log(startIndex, endIndex)}
+/>
+```
+
+## Props
+
+<ApiTable>
+  <ApiRow name="height" type="number" default="56">Strip height in pixels.</ApiRow>
+  <ApiRow name="formatLabel" type="(value: string, index: number) => string">
+    Formats the range-handle labels.
+  </ApiRow>
+  <ApiRow name="onChange" type="(range: { startIndex: number; endIndex: number }) => void">
+    Fires as the range moves.
+  </ApiRow>
+</ApiTable>
+
+<Callout title="Why this one is drawn by hand">
+  The look — a rounded frame around the selected range, dimmed sides, grip-dot
+  handle pills, range labels — is not something ECharts' `dataZoom` can
+  express. Routing it through `setOption` re-renders the dataZoom component
+  mid-drag, which resets its drag anchor and makes the handle lag the pointer
+  progressively further behind.
+
+  So the brush drives raw zrender elements directly, outside the option object.
+  This was flagged as the riskiest part of the port and turned out not to be:
+  almost none of it was framework-specific.
+</Callout>

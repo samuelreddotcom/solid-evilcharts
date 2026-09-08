@@ -1,0 +1,58 @@
+---
+title: Legend
+description: The legend overlay and its seven indicator shapes.
+order: 21
+group: Shared parts
+---
+
+# Legend
+
+`<Legend>` renders an HTML overlay above the chart canvas, positioned inside
+`[data-chart={id}]` so it can use the same injected colour variables the series
+do.
+
+```tsx
+<EChartsLineChart.Legend variant="circle-outline" align="left" isClickable />
+```
+
+## Props
+
+<ApiTable>
+  <ApiRow name="variant" type="LegendVariant" default='"rounded-square"'>
+    The indicator shape. Seven of them, below.
+  </ApiRow>
+  <ApiRow name="align" type='"left" | "center" | "right"'>
+    Defaults to `"right"` on the cartesian charts and `"center"` on the polar
+    ones.
+  </ApiRow>
+  <ApiRow name="verticalAlign" type='"top" | "middle" | "bottom"'>
+    Defaults to `"top"` on the cartesian charts and `"bottom"` on the polar
+    ones, where a legend above would crowd the arc.
+  </ApiRow>
+  <ApiRow name="isClickable" type="boolean" default="false">
+    Lets each entry toggle selection of its series.
+  </ApiRow>
+</ApiTable>
+
+## Indicator variants
+
+<ApiTable>
+  <ApiRow name="square" type="variant" />
+  <ApiRow name="rounded-square" type="variant">The default.</ApiRow>
+  <ApiRow name="rounded-square-outline" type="variant" />
+  <ApiRow name="circle" type="variant" />
+  <ApiRow name="circle-outline" type="variant" />
+  <ApiRow name="vertical-bar" type="variant" />
+  <ApiRow name="horizontal-bar" type="variant" />
+</ApiTable>
+
+A series configured with several colours shows the gradient in its indicator,
+not just the first colour.
+
+<Callout variant="warn" title="Style keys here must be kebab-case">
+  The legend builds inline styles as objects. Solid applies those through
+  `element.style.setProperty()`, which takes CSS property names verbatim — so
+  every key must be `background-color`, not `backgroundColor`. React's
+  camelCase spelling does nothing in Solid: no error, no warning, the style
+  simply never lands. A test guards this file specifically because of it.
+</Callout>

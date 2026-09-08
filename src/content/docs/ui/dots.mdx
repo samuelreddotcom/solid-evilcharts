@@ -1,0 +1,45 @@
+---
+title: Dots
+description: Point markers, and how presence selects a variant.
+order: 22
+group: Shared parts
+---
+
+# Dots
+
+`<Dot>` and `<ActiveDot>` nest inside a series element — a `<Line>`, an
+`<Area>`, or a `<Radar>`. `<Dot>` is the resting marker; `<ActiveDot>` is the
+one under the pointer.
+
+```tsx
+<EChartsLineChart.Line dataKey="desktop">
+  <EChartsLineChart.Dot variant="border" />
+  <EChartsLineChart.ActiveDot variant="colored-border" />
+</EChartsLineChart.Line>
+```
+
+## Presence is the switch
+
+<ApiTable>
+  <ApiRow name="element omitted" type="variant">Resolves to `"none"` — no marker.</ApiRow>
+  <ApiRow name="element present, no variant" type="variant">Resolves to `"default"`.</ApiRow>
+  <ApiRow name="element present with variant" type="variant">That variant.</ApiRow>
+</ApiTable>
+
+## Variants
+
+<ApiTable>
+  <ApiRow name="none" type="variant">No marker drawn.</ApiRow>
+  <ApiRow name="default" type="variant">Solid dot in the series colour.</ApiRow>
+  <ApiRow name="border" type="variant">Series colour with a background-coloured ring.</ApiRow>
+  <ApiRow name="colored-border" type="variant">Inverted — background fill, series-coloured ring.</ApiRow>
+  <ApiRow name="ping" type="variant">A pulsing halo around the dot.</ApiRow>
+</ApiTable>
+
+<Callout title="`ping` uses its own alpha, deliberately">
+  The halo is drawn at a flat 28% alpha regardless of the series colour's own.
+  That is why `echarts-dot` has an alpha helper separate from the one in
+  `chart-tokens`: this one **replaces** alpha, while the shared one
+  **multiplies** it. They look like duplication and are not — a translucent
+  series would otherwise produce an invisible halo.
+</Callout>

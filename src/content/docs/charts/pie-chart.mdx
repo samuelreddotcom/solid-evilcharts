@@ -1,0 +1,110 @@
+---
+title: Pie chart
+description: Sectors, donuts, labels, and eleven decorative backgrounds.
+order: 14
+group: Charts
+---
+
+import { PieChartDemo } from "../_demos/pie-chart-demo";
+
+# Pie chart
+
+<ComponentPreview files={["charts/pie-chart/pie-chart.tsx", "charts/pie-chart/parts.tsx", "charts/pie-chart/types.ts"]}>
+  <PieChartDemo />
+</ComponentPreview>
+
+## Installation
+
+<CommandBlock registryItem="pie-chart" />
+
+## Usage
+
+<Callout title="Config is keyed by sector name, not by series">
+  The cartesian charts key `config` by series (`desktop`, `mobile`). A pie has
+  one series and many sectors, so `config` is keyed by each sector's **name** —
+  the value found at `nameKey`. Getting this wrong gives you an uncoloured
+  chart rather than an error.
+</Callout>
+
+```tsx
+const data = [
+  { browser: "chrome", visitors: 275 },
+  { browser: "safari", visitors: 200 },
+];
+
+const config: ChartConfig = {
+  chrome: { label: "Chrome", colors: { light: ["#047857"], dark: ["#10b981"] } },
+  safari: { label: "Safari", colors: { light: ["#be123c"], dark: ["#f43f5e"] } },
+};
+
+<EChartsPieChart data={data} config={config} nameKey="browser" dataKey="visitors">
+  <EChartsPieChart.Pie innerRadius="55%" />
+  <EChartsPieChart.Label position="outside" />
+  <EChartsPieChart.Tooltip />
+  <EChartsPieChart.Legend />
+</EChartsPieChart>
+```
+
+A donut is `<Pie innerRadius>` above 0.
+
+## Root props
+
+<ApiTable>
+  <ApiRow name="data" type="TData[]" required>One sector per row.</ApiRow>
+  <ApiRow name="config" type="ChartConfig" required>Keyed by sector name.</ApiRow>
+  <ApiRow name="dataKey" type="string" required>Key holding each sector's numeric value.</ApiRow>
+  <ApiRow name="nameKey" type="string" required>Key holding each sector's name.</ApiRow>
+  <ApiRow name="renderer" type='"canvas" | "svg"' default='"canvas"' />
+  <ApiRow name="animation" type="boolean" default="true">
+    The OS reduce-motion setting also disables the intro.
+  </ApiRow>
+  <ApiRow name="defaultSelectedSector" type="string | null" default="null" />
+  <ApiRow name="selectedSector" type="string | null">Controlled selection.</ApiRow>
+  <ApiRow name="onSelectionChange" type="(s: { dataKey: string; value: number } | null) => void" />
+  <ApiRow name="isLoading" type="boolean" default="false" />
+  <ApiRow name="chartOptions" type="Record<string, unknown>" />
+  <ApiRow name="class" type="string" />
+</ApiTable>
+
+## Parts
+
+<ApiHeading>&lt;Pie&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="variant" type='"gradient"' default='"gradient"' />
+  <ApiRow name="innerRadius" type="number | string" default="0">Above 0 makes a donut.</ApiRow>
+  <ApiRow name="outerRadius" type="number | string" default='"80%"' />
+  <ApiRow name="cornerRadius" type="number" default="0" />
+  <ApiRow name="paddingAngle" type="number" default="0">
+    Gap between sectors in degrees. A **negative** value overlaps them.
+  </ApiRow>
+  <ApiRow name="startAngle" type="number" default="0" />
+  <ApiRow name="endAngle" type="number" default="360" />
+  <ApiRow name="isClickable" type="boolean" default="false">
+    The selected sector pops outward.
+  </ApiRow>
+</ApiTable>
+
+<ApiHeading>&lt;Label&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="position" type='"inside" | "outside"' default='"inside"'>
+    `inside` draws value text on the sector; `outside` moves the sector's name
+    past the rim with a leader line.
+  </ApiRow>
+  <ApiRow name="dataKey" type="string">Label text key. Defaults by position.</ApiRow>
+</ApiTable>
+
+<ApiHeading>&lt;Background&gt;</ApiHeading>
+
+A decorative SVG pattern drawn behind the chart. Eleven variants; `dots` is the
+default.
+
+<ApiTable>
+  <ApiRow name="variant" type="BackgroundVariant" default='"dots"' />
+</ApiTable>
+
+<ApiHeading>&lt;Tooltip&gt; and &lt;Legend&gt;</ApiHeading>
+
+As elsewhere, except the legend sits below the chart by default rather than
+above it: `align` is `"center"` and `verticalAlign` is `"bottom"`.

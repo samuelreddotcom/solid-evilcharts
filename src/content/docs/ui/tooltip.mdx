@@ -1,0 +1,47 @@
+---
+title: Tooltip
+description: The shared tooltip surface and its variants.
+order: 20
+group: Shared parts
+---
+
+# Tooltip
+
+`<Tooltip>` hangs off every chart and is the same component throughout — it
+lives in `lib/echarts-tooltip.ts` and is installed once, whichever chart pulls
+it in.
+
+Its presence turns the tooltip on. Omit it and there is none.
+
+```tsx
+<EChartsLineChart.Tooltip variant="frosted-glass" roundness="xl" position="fixed" />
+```
+
+## Props
+
+<ApiTable>
+  <ApiRow name="variant" type='"default" | "frosted-glass"' default='"default"'>
+    `frosted-glass` is a translucent background with a backdrop blur.
+  </ApiRow>
+  <ApiRow name="roundness" type='"sm" | "md" | "lg" | "xl"' default='"lg"' />
+  <ApiRow name="position" type='"fixed" | "variable"' default='"variable"'>
+    `variable` follows both axes, which is ECharts' own behaviour. `fixed`
+    tracks the pointer's x but stays pinned near the top — steadier to read
+    when values swing.
+  </ApiRow>
+  <ApiRow name="cursor" type="boolean" default="true">
+    Whether a vertical cursor line follows the pointer. Line, area and composed
+    charts only — bar charts highlight the hovered column instead, and the
+    polar charts have no cursor axis.
+  </ApiRow>
+</ApiTable>
+
+<Callout title="It is HTML, not canvas">
+  ECharts' tooltip `formatter` returns an HTML string, so the tooltip is real
+  DOM inside `[data-chart={id}]` rather than something painted on the canvas.
+  That is why it picks up your Tailwind classes and the injected `--color-*`
+  variables directly, and why it looks identical under both renderers.
+
+  It also means these are string builders, not Solid components — there was no
+  JSX here to port.
+</Callout>

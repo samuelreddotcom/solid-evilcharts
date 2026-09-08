@@ -1,0 +1,105 @@
+---
+title: Bar chart
+description: Eight fill styles, stacking, layout swap, and max-value highlighting.
+order: 12
+group: Charts
+---
+
+import { BarChartDemo } from "../_demos/bar-chart-demo";
+
+# Bar chart
+
+<ComponentPreview files={["charts/bar-chart/bar-chart.tsx", "charts/bar-chart/paints.ts", "charts/bar-chart/parts.tsx", "charts/bar-chart/types.ts"]}>
+  <BarChartDemo />
+</ComponentPreview>
+
+## Installation
+
+<CommandBlock registryItem="bar-chart" />
+
+## Usage
+
+```tsx
+<EChartsBarChart data={data} config={config} xDataKey="month">
+  <EChartsBarChart.Grid />
+  <EChartsBarChart.XAxis dataKey="month" tickFormatter={(v) => v.slice(0, 3)} />
+  <EChartsBarChart.YAxis />
+  <EChartsBarChart.Tooltip />
+  <EChartsBarChart.Legend />
+  <EChartsBarChart.Bar dataKey="desktop" variant="duotone" />
+</EChartsBarChart>
+```
+
+## Fill variants
+
+<ApiTable>
+  <ApiRow name="default" type="fill">Flat series colour.</ApiRow>
+  <ApiRow name="duotone" type="fill">Split fill, darker below.</ApiRow>
+  <ApiRow name="duotone-reverse" type="fill">The same split, inverted.</ApiRow>
+  <ApiRow name="gradient" type="fill">Vertical fade.</ApiRow>
+  <ApiRow name="stripped" type="fill">Gradient with a flat cap at the top.</ApiRow>
+  <ApiRow name="expandable" type="fill">Strip that grows toward the value.</ApiRow>
+  <ApiRow name="hatched" type="fill">Cross-hatch pattern. Canvas only.</ApiRow>
+  <ApiRow name="blocks" type="fill">Stacked block pattern. Canvas only.</ApiRow>
+</ApiTable>
+
+<Callout variant="warn" title="Two fills need the canvas renderer">
+  `hatched` and `blocks` are 2D patterns and need a real canvas context. Under
+  `renderer="svg"` they fall back to a plain fill.
+</Callout>
+
+<Callout title="Bar width is measured, not assumed">
+  The pattern fills have to know how wide a bar actually is, and ECharts only
+  decides that after layout. The chart measures the laid-out bar and rebuilds
+  the paint — so a pattern-filled bar renders correctly only in a real browser,
+  never in jsdom.
+</Callout>
+
+## Root props
+
+<ApiTable>
+  <ApiRow name="data" type="TData[]" required />
+  <ApiRow name="config" type="ChartConfig" required />
+  <ApiRow name="xDataKey" type="string">Category key.</ApiRow>
+  <ApiRow name="renderer" type='"canvas" | "svg"' default='"canvas"' />
+  <ApiRow name="stackType" type='"default" | "stacked" | "percent"' default='"default"' />
+  <ApiRow name="layout" type='"vertical" | "horizontal"' default='"vertical"'>
+    `horizontal` swaps the axes for a bar-across layout.
+  </ApiRow>
+  <ApiRow name="barRadius" type="number" default="2">Corner radius each `<Bar>` inherits.</ApiRow>
+  <ApiRow name="barGap" type="number">Gap between bars in the same category, in pixels.</ApiRow>
+  <ApiRow name="barCategoryGap" type="number">Gap between categories, in pixels.</ApiRow>
+  <ApiRow name="animation" type="boolean" default="true" />
+  <ApiRow name="animationType" type="BarAnimationType" default='"left-to-right"' />
+  <ApiRow name="enableMaxValueHighlight" type="boolean" default="false">
+    Colours only the tallest column and mutes the rest. With several series the
+    comparison is per **column** — the total across every series at that
+    category — so a whole stack lights up together, not one bar inside it.
+  </ApiRow>
+  <ApiRow name="defaultSelectedDataKey" type="string | null" default="null" />
+  <ApiRow name="onSelectionChange" type="(key: string | null) => void" />
+  <ApiRow name="isLoading" type="boolean" default="false" />
+  <ApiRow name="loadingBars" type="number" default="12" />
+  <ApiRow name="chartOptions" type="Record<string, unknown>" />
+  <ApiRow name="class" type="string" />
+</ApiTable>
+
+## Parts
+
+<ApiHeading>&lt;Bar&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="dataKey" type="string" required />
+  <ApiRow name="variant" type="BarVariant" default='"default"' />
+  <ApiRow name="radius" type="number">Falls back to the root `barRadius`.</ApiRow>
+  <ApiRow name="animationType" type="BarAnimationType" />
+  <ApiRow name="isClickable" type="boolean" default="false" />
+  <ApiRow name="enableHoverHighlight" type="boolean" default="false">Dims the other bars while one is hovered.</ApiRow>
+  <ApiRow name="glowing" type="boolean" default="false" />
+  <ApiRow name="bufferBar" type="boolean" default="false">Renders the last data point as a hatched buffer bar.</ApiRow>
+</ApiTable>
+
+<ApiHeading>&lt;XAxis&gt;, &lt;YAxis&gt;, &lt;Tooltip&gt;, &lt;Legend&gt;, &lt;Grid&gt;, &lt;Brush&gt;</ApiHeading>
+
+As on the [line chart](/docs/charts/line-chart). `<Tooltip>` here takes no
+`cursor` prop — a bar chart highlights the hovered column instead.

@@ -1,0 +1,118 @@
+---
+title: Area chart
+description: Seven fill styles, stacking, and 100% stacks.
+order: 11
+group: Charts
+---
+
+import { AreaChartDemo } from "../_demos/area-chart-demo";
+
+# Area chart
+
+<ComponentPreview files={["charts/area-chart/area-chart.tsx", "charts/area-chart/fills.ts", "charts/area-chart/parts.tsx", "charts/area-chart/types.ts"]}>
+  <AreaChartDemo />
+</ComponentPreview>
+
+## Installation
+
+<CommandBlock registryItem="area-chart" />
+
+## Usage
+
+```tsx
+<EChartsAreaChart data={data} config={config} xDataKey="month">
+  <EChartsAreaChart.Grid />
+  <EChartsAreaChart.XAxis dataKey="month" tickFormatter={(v) => v.slice(0, 3)} />
+  <EChartsAreaChart.YAxis />
+  <EChartsAreaChart.Tooltip />
+  <EChartsAreaChart.Legend />
+  <EChartsAreaChart.Area dataKey="desktop" variant="gradient">
+    <EChartsAreaChart.Dot variant="border" />
+  </EChartsAreaChart.Area>
+</EChartsAreaChart>
+```
+
+## Fill variants
+
+`<Area variant>` selects the fill. `gradient` is the default.
+
+<ApiTable>
+  <ApiRow name="gradient" type="fill">Series colour fading to transparent.</ApiRow>
+  <ApiRow name="gradient-reverse" type="fill">The same fade, inverted.</ApiRow>
+  <ApiRow name="solid" type="fill">Flat fill at a fixed alpha.</ApiRow>
+  <ApiRow name="dotted" type="fill">Dot pattern. Canvas only.</ApiRow>
+  <ApiRow name="lines" type="fill">Diagonal line pattern. Canvas only.</ApiRow>
+  <ApiRow name="hatched" type="fill">Cross-hatch pattern. Canvas only.</ApiRow>
+  <ApiRow name="none" type="fill">Stroke only, no fill.</ApiRow>
+</ApiTable>
+
+<Callout variant="warn" title="Three fills need the canvas renderer">
+  `dotted`, `lines` and `hatched` are drawn with a 2D pattern, so they need a
+  real canvas context. Under `renderer="svg"` they fall back to no fill rather
+  than erroring — worth knowing if you switch renderers and a chart goes flat.
+</Callout>
+
+## Stacking
+
+`stackType` on the root controls how several areas combine.
+
+<ApiTable>
+  <ApiRow name='"default"' type="StackType">Areas overlap, drawn back to front.</ApiRow>
+  <ApiRow name='"stacked"' type="StackType">Values accumulate.</ApiRow>
+  <ApiRow name='"expanded"' type="StackType">Accumulate and normalise to 100%.</ApiRow>
+</ApiTable>
+
+## Root props
+
+<ApiTable>
+  <ApiRow name="data" type="TData[]" required>Rows to plot.</ApiRow>
+  <ApiRow name="config" type="ChartConfig" required>See [Chart config](/docs/chart-config).</ApiRow>
+  <ApiRow name="xDataKey" type="string">Category key. Falls back to `<XAxis dataKey>`, then the first free column.</ApiRow>
+  <ApiRow name="renderer" type='"canvas" | "svg"' default='"canvas"' />
+  <ApiRow name="curveType" type="CurveType" default='"linear"'>Interpolation each `<Area>` inherits.</ApiRow>
+  <ApiRow name="stackType" type="StackType" default='"default"' />
+  <ApiRow name="animation" type="boolean" default="true" />
+  <ApiRow name="animationType" type="AreaAnimationType" default='"left-to-right"' />
+  <ApiRow name="enableHoverHighlight" type="boolean" default="false">Hovering a series dims the others.</ApiRow>
+  <ApiRow name="enableHoverReveal" type="boolean" default="false">Hovering colours each area up to the pointer's x.</ApiRow>
+  <ApiRow name="defaultSelectedDataKey" type="string | null" default="null">Uncontrolled initial selection.</ApiRow>
+  <ApiRow name="selectedDataKey" type="string | null">Controlled selection — overrides internal state.</ApiRow>
+  <ApiRow name="onSelectionChange" type="(key: string | null) => void" />
+  <ApiRow name="isLoading" type="boolean" default="false" />
+  <ApiRow name="loadingPoints" type="number" default="14" />
+  <ApiRow name="chartOptions" type="Record<string, unknown>">Merged over the built ECharts option.</ApiRow>
+  <ApiRow name="class" type="string" />
+</ApiTable>
+
+## Parts
+
+<ApiHeading>&lt;Area&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="dataKey" type="string" required />
+  <ApiRow name="variant" type="AreaVariant" default='"gradient"' />
+  <ApiRow name="strokeVariant" type='"solid" | "dashed" | "animated-dashed"' default='"dashed"'>
+    Note this differs from `<Line>`, which defaults to `"solid"`. The divergence
+    is inherited from the Recharts original and kept deliberately.
+  </ApiRow>
+  <ApiRow name="strokeWidth" type="number" />
+  <ApiRow name="curveType" type="CurveType">Falls back to the root value.</ApiRow>
+  <ApiRow name="animationType" type="AreaAnimationType" />
+  <ApiRow name="connectNulls" type="boolean" default="false" />
+  <ApiRow name="isClickable" type="boolean" default="false" />
+  <ApiRow name="enableBufferLine" type="boolean" default="false">
+    Renders the last segment as a dashed, fill-less buffer.
+  </ApiRow>
+</ApiTable>
+
+<ApiHeading>&lt;Dot&gt; and &lt;ActiveDot&gt;</ApiHeading>
+
+Nested in an `<Area>`. Omitting the element is `"none"`; including it bare is `"default"`.
+
+<ApiTable>
+  <ApiRow name="variant" type='"none" | "default" | "border" | "colored-border" | "ping"' default='"default"' />
+</ApiTable>
+
+<ApiHeading>&lt;XAxis&gt;, &lt;YAxis&gt;, &lt;Tooltip&gt;, &lt;Legend&gt;, &lt;Grid&gt;, &lt;Brush&gt;</ApiHeading>
+
+Identical to the [line chart](/docs/charts/line-chart)'s.

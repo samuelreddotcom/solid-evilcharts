@@ -1,0 +1,88 @@
+---
+title: Radial chart
+description: Polar bars, gauges, semi arcs, and background tracks.
+order: 15
+group: Charts
+---
+
+import { RadialChartDemo } from "../_demos/radial-chart-demo";
+
+# Radial chart
+
+<ComponentPreview files={["charts/radial-chart/radial-chart.tsx", "charts/radial-chart/parts.tsx", "charts/radial-chart/types.ts"]}>
+  <RadialChartDemo />
+</ComponentPreview>
+
+## Installation
+
+<CommandBlock registryItem="radial-chart" />
+
+## Usage
+
+Like the pie chart, `config` is keyed by each bar's **name** — one bar per row.
+
+```tsx
+<EChartsRadialChart data={data} config={config} nameKey="browser">
+  <EChartsRadialChart.RadialBar dataKey="visitors" showBackground />
+  <EChartsRadialChart.Tooltip />
+  <EChartsRadialChart.Legend />
+</EChartsRadialChart>
+```
+
+## Gauges
+
+Without `max`, the scale comes from the data, so the largest bar always fills
+the arc. That is right for comparing values and wrong for a gauge, where a
+single number has to read against a fixed total. Set `max` for gauges:
+
+```tsx
+<EChartsRadialChart data={[{ name: "cpu", load: 72 }]} config={config} nameKey="name" max={100} variant="semi">
+  <EChartsRadialChart.RadialBar dataKey="load" showBackground />
+</EChartsRadialChart>
+```
+
+## Root props
+
+<ApiTable>
+  <ApiRow name="data" type="TData[]" required>One bar (ring) per row.</ApiRow>
+  <ApiRow name="config" type="ChartConfig" required>Keyed by bar name.</ApiRow>
+  <ApiRow name="nameKey" type="string" required />
+  <ApiRow name="renderer" type='"canvas" | "svg"' default='"canvas"' />
+  <ApiRow name="variant" type='"full" | "semi"' default='"full"'>Full circle or half.</ApiRow>
+  <ApiRow name="max" type="number">Value a full sweep represents. See gauges above.</ApiRow>
+  <ApiRow name="innerRadius" type="number | string" default='"30%"' />
+  <ApiRow name="outerRadius" type="number | string" default='"100%"' />
+  <ApiRow name="backgroundVariant" type="BackgroundVariant">
+    Decorative pattern behind the chart. A root prop here, not a marker — unlike
+    the pie chart's `<Background>`.
+  </ApiRow>
+  <ApiRow name="defaultSelectedDataKey" type="string | null" default="null" />
+  <ApiRow name="onSelectionChange" type="(s: { dataKey: string; value: number } | null) => void" />
+  <ApiRow name="isLoading" type="boolean" default="false" />
+  <ApiRow name="chartOptions" type="Record<string, unknown>" />
+  <ApiRow name="class" type="string" />
+</ApiTable>
+
+## Parts
+
+<ApiHeading>&lt;RadialBar&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="dataKey" type="string" required>Determines each bar's arc length.</ApiRow>
+  <ApiRow name="cornerRadius" type="number" default="5" />
+  <ApiRow name="barSize" type="number" default="14">Thickness in pixels.</ApiRow>
+  <ApiRow name="showBackground" type="boolean" default="false">
+    Draws the unfilled track behind each bar.
+  </ApiRow>
+  <ApiRow name="isClickable" type="boolean" default="false" />
+</ApiTable>
+
+<Callout title="Why the track is a second polar system">
+  `showBackground` does not tint the bar's own background. The track is a
+  separate series on its own polar coordinate system, drawn beneath — which is
+  what lets it keep a constant thickness while the bars animate their sweep.
+</Callout>
+
+<ApiHeading>&lt;Tooltip&gt; and &lt;Legend&gt;</ApiHeading>
+
+The legend defaults to below the chart, centred.

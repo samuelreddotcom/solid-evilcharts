@@ -1,0 +1,90 @@
+---
+title: Composed chart
+description: Bars and lines on shared axes.
+order: 13
+group: Charts
+---
+
+import { ComposedChartDemo } from "../_demos/composed-chart-demo";
+
+# Composed chart
+
+<ComponentPreview files={["charts/composed-chart/composed-chart.tsx", "charts/composed-chart/paints.ts", "charts/composed-chart/parts.tsx", "charts/composed-chart/types.ts"]}>
+  <ComposedChartDemo />
+</ComponentPreview>
+
+## Installation
+
+<CommandBlock registryItem="composed-chart" />
+
+## Usage
+
+```tsx
+<EChartsComposedChart data={data} config={config} xDataKey="month">
+  <EChartsComposedChart.Grid />
+  <EChartsComposedChart.XAxis dataKey="month" />
+  <EChartsComposedChart.YAxis />
+  <EChartsComposedChart.Tooltip />
+  <EChartsComposedChart.Bar dataKey="desktop" variant="duotone" />
+  <EChartsComposedChart.Line dataKey="mobile">
+    <EChartsComposedChart.Dot variant="border" />
+  </EChartsComposedChart.Line>
+</EChartsComposedChart>
+```
+
+<Callout title="A simplification, not a union">
+  This is not "the bar chart plus the line chart". It carries a deliberately
+  smaller surface than either: six bar fills rather than eight, no stacking, no
+  layout swap, no hover-reveal. If you need those, use the dedicated chart.
+
+  **Order matters.** Bars and lines are drawn in the order their elements
+  appear, so a `<Line>` declared before a `<Bar>` is painted underneath it.
+</Callout>
+
+## Root props
+
+<ApiTable>
+  <ApiRow name="data" type="TData[]" required />
+  <ApiRow name="config" type="ChartConfig" required>Covers every bar **and** line.</ApiRow>
+  <ApiRow name="xDataKey" type="string" />
+  <ApiRow name="renderer" type='"canvas" | "svg"' default='"canvas"' />
+  <ApiRow name="curveType" type="CurveType" default='"linear"' />
+  <ApiRow name="animation" type="boolean" default="true" />
+  <ApiRow name="animationType" type="ComposedAnimationType" default='"left-to-right"' />
+  <ApiRow name="barGap" type="number | string">Accepts `"30%"` or a pixel number.</ApiRow>
+  <ApiRow name="barCategoryGap" type="number | string" />
+  <ApiRow name="defaultSelectedDataKey" type="string | null" default="null" />
+  <ApiRow name="onSelectionChange" type="(key: string | null) => void" />
+  <ApiRow name="isLoading" type="boolean" default="false" />
+  <ApiRow name="loadingBars" type="number" default="12" />
+  <ApiRow name="chartOptions" type="Record<string, unknown>" />
+  <ApiRow name="class" type="string" />
+</ApiTable>
+
+## Parts
+
+<ApiHeading>&lt;Bar&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="dataKey" type="string" required />
+  <ApiRow name="variant" type='"default" | "hatched" | "duotone" | "duotone-reverse" | "gradient" | "stripped"' default='"default"' />
+  <ApiRow name="radius" type="number" default="4" />
+  <ApiRow name="glow" type="boolean" default="false">A canvas shadow.</ApiRow>
+  <ApiRow name="animationType" type="ComposedAnimationType" />
+  <ApiRow name="isClickable" type="boolean" default="false" />
+  <ApiRow name="enableHoverHighlight" type="boolean" default="false" />
+  <ApiRow name="barProps" type="Partial<BarSeriesOption>">Merged into the raw ECharts bar series.</ApiRow>
+</ApiTable>
+
+<ApiHeading>&lt;Line&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="dataKey" type="string" required />
+  <ApiRow name="strokeVariant" type='"solid" | "dashed" | "animated-dashed"' default='"solid"' />
+  <ApiRow name="connectNulls" type="boolean" default="false" />
+  <ApiRow name="glow" type="boolean" default="false" />
+  <ApiRow name="isClickable" type="boolean" default="false" />
+</ApiTable>
+
+Bars and lines glow by different mechanisms — a bar's is a canvas shadow, a
+line's is a wider translucent copy drawn beneath it. Both are `glow`.

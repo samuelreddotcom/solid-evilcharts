@@ -1,0 +1,110 @@
+---
+title: Sankey chart
+description: Flow diagram with a column-by-column intro cascade.
+order: 17
+group: Charts
+---
+
+import { SankeyChartDemo } from "../_demos/sankey-chart-demo";
+
+# Sankey chart
+
+<ComponentPreview files={["charts/sankey-chart/sankey-chart.tsx", "charts/sankey-chart/parts.tsx", "charts/sankey-chart/types.ts"]}>
+  <SankeyChartDemo />
+</ComponentPreview>
+
+## Installation
+
+<CommandBlock registryItem="sankey-chart" />
+
+## Usage
+
+<Callout title="The outlier of the set">
+  Every other chart takes an array of rows. A sankey takes a **graph**:
+  `{ nodes, links }`, where each link's `source` and `target` are **indices**
+  into `nodes`. There is no `xDataKey`, no axes, and `config` is keyed by node
+  name.
+</Callout>
+
+```tsx
+const data: SankeyData = {
+  nodes: [{ name: "direct" }, { name: "landing" }, { name: "signup" }],
+  links: [
+    { source: 0, target: 1, value: 120 },
+    { source: 1, target: 2, value: 90 },
+  ],
+};
+
+<EChartsSankeyChart data={data} config={config}>
+  <EChartsSankeyChart.Node radius={4} />
+  <EChartsSankeyChart.NodeLabel position="outside" showValues />
+  <EChartsSankeyChart.Link variant="gradient" />
+  <EChartsSankeyChart.Tooltip />
+</EChartsSankeyChart>
+```
+
+<Callout variant="warn" title="No <NodeLabel position> means no labels">
+  `<NodeLabel>` has no default position. Omit the prop and the chart renders
+  without labels rather than falling back to one — the same presence-is-config
+  rule as everywhere else, applied one level deeper.
+</Callout>
+
+## Root props
+
+<ApiTable>
+  <ApiRow name="data" type="SankeyData" required>`{ nodes, links }`.</ApiRow>
+  <ApiRow name="config" type="ChartConfig" required>Keyed by node name.</ApiRow>
+  <ApiRow name="renderer" type='"canvas" | "svg"' default='"canvas"' />
+  <ApiRow name="nodeWidth" type="number" default="10" />
+  <ApiRow name="nodePadding" type="number" default="10">Vertical gap between nodes.</ApiRow>
+  <ApiRow name="linkCurvature" type="number" default="0.5">0 is straight, 1 is maximum.</ApiRow>
+  <ApiRow name="iterations" type="number" default="32">Layout relaxation passes.</ApiRow>
+  <ApiRow name="align" type='"left" | "justify"' default='"justify"' />
+  <ApiRow name="animation" type="boolean" default="true" />
+  <ApiRow name="animationType" type='"none" | "default"' default='"default"'>
+    A sankey has no directional draw-in — its entrance follows the graph, not an
+    axis. `default` plays the column-by-column cascade.
+  </ApiRow>
+  <ApiRow name="defaultSelectedNode" type="string | null" default="null" />
+  <ApiRow name="onSelectionChange" type="(s: { dataKey: string; value: number } | null) => void" />
+  <ApiRow name="isLoading" type="boolean" default="false" />
+  <ApiRow name="chartOptions" type="Record<string, unknown>" />
+  <ApiRow name="class" type="string" />
+  <ApiRow name="sort" type="boolean">
+    Accepted and **ignored** — kept for parity with the Recharts original. The
+    ECharts sankey layout always sorts.
+  </ApiRow>
+  <ApiRow name="verticalAlign" type='"justify" | "top"'>Also accepted and ignored.</ApiRow>
+</ApiTable>
+
+## Parts
+
+<ApiHeading>&lt;Node&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="radius" type="number" default="0" />
+  <ApiRow name="isClickable" type="boolean" default="false" />
+</ApiTable>
+
+<ApiHeading>&lt;NodeLabel&gt;</ApiHeading>
+
+Sits inside `<Node>`.
+
+<ApiTable>
+  <ApiRow name="position" type='"inside" | "outside"'>No default — omit it and no labels render.</ApiRow>
+  <ApiRow name="showValues" type="boolean" default="false" />
+  <ApiRow name="valueFormatter" type="(value: number) => string" />
+</ApiTable>
+
+<ApiHeading>&lt;Link&gt;</ApiHeading>
+
+<ApiTable>
+  <ApiRow name="variant" type='"gradient" | "solid" | "source" | "target"' default='"gradient"'>
+    `source` and `target` take the colour of one end; `gradient` blends both.
+  </ApiRow>
+  <ApiRow name="verticalPadding" type="number" default="10">Reserved for parity.</ApiRow>
+</ApiTable>
+
+<ApiHeading>&lt;Tooltip&gt;</ApiHeading>
+
+As elsewhere. There is no `<Legend>` on this chart.

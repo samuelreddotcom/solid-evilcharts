@@ -11,6 +11,11 @@
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "isolatedModules": true,
+    // Vite's forthcoming native config loader requires explicit extensions on
+    // config-file imports (it warns today, will error later); TypeScript
+    // forbids them without this flag. Safe here because "noEmit" is on — the
+    // flag is only rejected when TS is actually emitting.
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     // verbatimModuleSyntax is deliberately OFF. It buys style, not safety, and
     // solid-foundation-design-system doesn't use it — enabling it here would

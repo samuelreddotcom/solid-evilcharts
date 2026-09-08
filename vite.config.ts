@@ -5,6 +5,9 @@ import devtools from "solid-devtools/vite";
 import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
 
+import { docsIndex } from "./src/plugins/docs-index.ts";
+import { mdxPlugin } from "./src/plugins/mdx.ts";
+
 // `command` is "serve" during `vite` (dev) and "build" during `vite build`.
 // Code-splitting routes breaks solid HMR (each route becomes a ?tsr-split
 // chunk that isn't a refresh boundary), so we only enable it for builds.
@@ -13,11 +16,13 @@ export default defineConfig(({ command }) => ({
   plugins: [
     devtools(),
     tailwindcss(),
+    docsIndex(resolve(import.meta.dirname, "src/content/docs")),
     tanstackRouter({
       target: "solid",
       autoCodeSplitting: command === "build",
     }),
-    solid(),
+    mdxPlugin(),
+    solid({ extensions: [".mdx"] }),
   ],
   resolve: {
     alias: { "~": resolve(import.meta.dirname, "src") },

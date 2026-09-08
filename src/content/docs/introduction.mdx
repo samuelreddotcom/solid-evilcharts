@@ -1,0 +1,33 @@
+---
+title: Introduction
+description: What this library is, and who should use it.
+---
+
+import { LineChartDemo } from "./_demos/line-chart-demo";
+
+# Introduction
+
+`@solid-foundation/charts` is a set of copy-pasteable chart components for
+SolidJS, built on Apache ECharts 6. It is a port of
+[EvilCharts](https://evilcharts.com) — if you write React, use the original.
+
+## A live chart
+
+The component below is imported by this page and rendered inline, which is the
+whole reason for MDX rather than static HTML:
+
+<LineChartDemo />
+
+## What ships
+
+| Piece | Where it lives |
+| --- | --- |
+| Chart components | `src/registry/charts/<name>/` |
+| Shared primitives | `src/registry/lib/` |
+| Vendored UI | `src/components/ui/` — *not* distributed |
+
+## Installing
+
+```bash
+npx shadcn@latest add @solid-foundation/line-chart
+```

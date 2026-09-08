@@ -16,11 +16,14 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 
+import GithubSlugger from "github-slugger";
 import matter from "gray-matter";
 import type { Plugin } from "vite";
 
 const VIRTUAL_ID = "virtual:docs-index";
 const RESOLVED_ID = "\0" + VIRTUAL_ID;
+
+export type DocsHeading = { depth: 2 | 3; text: string; id: string };
 
 export type DocsIndexEntry = {
   slug: string;
@@ -28,7 +31,33 @@ export type DocsIndexEntry = {
   description?: string;
   /** Path relative to the project root, so the lazy glob can key off it. */
   path: string;
+  headings: DocsHeading[];
 };
+
+/**
+ * Headings for "On This Page", read at build time from the same file the
+ * sidebar's frontmatter comes from.
+ *
+ * The ids MUST match what rehype-slug puts on the rendered headings, or every
+ * anchor is a dead link. rehype-slug uses github-slugger, so this does too —
+ * a hand-rolled slugify would agree on "Installing" and diverge on the first
+ * heading with punctuation.
+ *
+ * Fenced code blocks are stripped first: a `# comment` inside a bash block is
+ * not a heading, and `## ` inside a diff would be worse.
+ */
+function headingsOf(body: string): DocsHeading[] {
+  const withoutCode = body.replace(/^```[\s\S]*?^```/gm, "");
+  const slugger = new GithubSlugger();
+  return [...withoutCode.matchAll(/^(#{2,3})\s+(.+?)\s*$/gm)].map((m) => {
+    const text = m[2]!.replace(/`/g, "");
+    return {
+      depth: m[1]!.length as 2 | 3,
+      text,
+      id: slugger.slug(text),
+    };
+  });
+}
 
 function walk(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -46,13 +75,14 @@ export function docsIndex(contentDir: string): Plugin {
   function build(): DocsIndexEntry[] {
     return walk(root)
       .map((file) => {
-        const { data } = matter(readFileSync(file, "utf8"));
+        const { data, content } = matter(readFileSync(file, "utf8"));
         const slug = relative(root, file).replace(/\.mdx$/, "");
         return {
           slug,
           title: typeof data.title === "string" ? data.title : slug,
           description: typeof data.description === "string" ? data.description : undefined,
           path: file,
+          headings: headingsOf(content),
         };
       })
       .sort((a, b) => a.slug.localeCompare(b.slug));

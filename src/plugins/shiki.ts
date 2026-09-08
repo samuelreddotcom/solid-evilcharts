@@ -36,6 +36,27 @@ const LANGS: Record<string, string> = {
 
 export const SHIKI_THEMES = { light: "min-light", dark: "vesper" } as const;
 
+/**
+ * The grammars the docs use.
+ *
+ * Naming them means an unlisted language throws instead of silently rendering
+ * unhighlighted. It does NOT make startup meaningfully faster — measured
+ * 2721ms before and 2598ms after. Shiki's first call costs ~2.6s regardless,
+ * and it is module and WASM initialisation, not grammar parsing; subsequent
+ * compiles are ~12ms. Cutting that would mean moving to `shiki/core` with a
+ * hand-assembled bundle, which is not worth it for a build-time step.
+ */
+export const SHIKI_LANGS = [
+  "typescript",
+  "tsx",
+  "javascript",
+  "jsx",
+  "css",
+  "json",
+  "bash",
+  "mdx",
+] as const;
+
 export function shikiRaw(): Plugin {
   // One highlighter for the whole build. Creating one per file re-parses every
   // grammar, which turns a fast build into a slow one.
@@ -55,7 +76,7 @@ export function shikiRaw(): Plugin {
 
       highlighter ??= createHighlighter({
         themes: Object.values(SHIKI_THEMES),
-        langs: [...new Set(Object.values(LANGS))],
+        langs: [...SHIKI_LANGS],
       });
 
       const code = await readFile(file, "utf8");

@@ -24,10 +24,13 @@
  * No MDXProvider: `solid-mdx` is at 0.0.7 and unmaintained, and passing
  * `components` explicitly costs one prop at the single call site.
  */
+import { Show } from "solid-js";
 import type { Component, JSX } from "solid-js";
 import { Dynamic } from "solid-js/web";
 
 import { ComponentPreview } from "./component-preview";
+import { CopyButton } from "./copy-button";
+import { InstallTabs } from "./install-tabs";
 
 type Props<T = HTMLElement> = JSX.HTMLAttributes<T> & { children?: JSX.Element };
 
@@ -116,11 +119,20 @@ const STYLED: Record<string, Component<never>> = {
     <td {...props} class="border-border border-b px-4 py-2 align-top" />
   ),
 
-  pre: (props: Props<HTMLPreElement>) => (
-    <pre
-      {...props}
-      class="bg-muted border-border my-6 overflow-x-auto rounded-lg border p-4 text-sm"
-    />
+  // Shiki already emits a styled <pre>; this only supplies the frame and the
+  // copy button. `data-code` carries the pre-highlight source — see the
+  // keep-source-for-copy transformer in plugins/mdx.ts.
+  pre: (props: Props<HTMLPreElement> & { "data-code"?: string }) => (
+    <div class="border-border relative my-6 overflow-hidden rounded-lg border">
+      <Show when={props["data-code"]}>
+        {(code) => (
+          <div class="absolute top-2 right-2 z-10">
+            <CopyButton value={code()} />
+          </div>
+        )}
+      </Show>
+      <pre {...props} class="overflow-x-auto text-sm" />
+    </div>
   ),
   code: (props: Props<HTMLElement>) => (
     <code
@@ -133,6 +145,7 @@ const STYLED: Record<string, Component<never>> = {
 export const mdxComponents: Record<string, Component<never>> = {
   // Available in every .mdx page without an import line.
   ComponentPreview: ComponentPreview as unknown as Component<never>,
+  InstallTabs: InstallTabs as unknown as Component<never>,
   ...(Object.fromEntries(MDX_TAGS.map((tag) => [tag, passthrough(tag)])) as Record<
     string,
     Component<never>

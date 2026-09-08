@@ -20,6 +20,13 @@ exact bytes `shadcn add` writes into your project, not a hand-copied snippet:
   <LineChartDemo />
 </ComponentPreview>
 
+## Why ECharts, and not SVG?
+
+EvilCharts is built on Recharts, which renders SVG. This port targets Apache
+ECharts instead, because several of the upstream looks — pattern fills, glow
+shadows, gradient strokes — are canvas operations. ECharts also ships an SVG
+renderer, and every chart takes a `renderer` prop, so you can choose per chart.
+
 ## What ships
 
 | Piece | Where it lives |
@@ -30,6 +37,34 @@ exact bytes `shadcn add` writes into your project, not a hand-copied snippet:
 
 ## Installing
 
-```bash
-npx shadcn@latest add @solid-foundation/line-chart
+<InstallTabs item="line-chart" />
+
+Point the CLI at the registry first, in `components.json`. **Do not run
+`shadcn init`** — it is React-only and will install `@base-ui/react`,
+`lucide-react` and friends into a Solid project, and overwrite your
+`src/lib/utils.ts`. Write the file by hand instead:
+
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "tsx": true,
+  "rsc": false,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/app.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "aliases": {
+    "components": "~/components",
+    "utils": "~/lib/utils",
+    "ui": "~/components/ui",
+    "lib": "~/lib",
+    "hooks": "~/hooks"
+  },
+  "registries": {
+    "@solid-foundation": "https://example.com/r/{name}.json"
+  }
+}
 ```

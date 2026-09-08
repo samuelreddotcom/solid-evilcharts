@@ -18,6 +18,13 @@ import { resolve } from "node:path";
 import { compile } from "@mdx-js/mdx";
 import { describe, expect, it } from "vitest";
 
+/**
+ * Shiki's first call costs ~2.6s of module and WASM init (measured; later
+ * compiles are ~12ms), and each test file pays it once. Under the default 5s
+ * that failed roughly two runs in five — a flake, not a slow test.
+ */
+const COMPILE_TIMEOUT_MS = 30_000;
+
 import { MDX_OPTIONS } from "../../plugins/mdx.ts";
 import { MDX_TAG_LIST } from "./mdx-components";
 
@@ -48,12 +55,16 @@ describe("MDX tag coverage", () => {
   });
 
   for (const file of FILES) {
-    it(`${file.replace(CONTENT + "/", "")} uses only covered tags`, async () => {
-      const compiled = String(await compile(readFileSync(file), MDX_OPTIONS));
-      const missing = tagsUsedBy(compiled).filter(
-        (tag) => !(MDX_TAG_LIST as readonly string[]).includes(tag),
-      );
-      expect(missing).toEqual([]);
-    });
+    it(
+      `${file.replace(CONTENT + "/", "")} uses only covered tags`,
+      async () => {
+        const compiled = String(await compile(readFileSync(file), MDX_OPTIONS));
+        const missing = tagsUsedBy(compiled).filter(
+          (tag) => !(MDX_TAG_LIST as readonly string[]).includes(tag),
+        );
+        expect(missing).toEqual([]);
+      },
+      COMPILE_TIMEOUT_MS,
+    );
   }
 });

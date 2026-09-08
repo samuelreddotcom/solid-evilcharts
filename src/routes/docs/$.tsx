@@ -5,6 +5,7 @@ import { Dynamic } from "solid-js/web";
 import { DocsSidebar } from "../../components/docs/docs-sidebar";
 import { findDocsPage } from "../../components/docs/docs-pages";
 import { mdxComponents } from "../../components/docs/mdx-components";
+import { OnThisPage } from "../../components/docs/on-this-page";
 
 export const Route = createFileRoute("/docs/$")({
   component: DocsPageRoute,
@@ -24,7 +25,7 @@ function DocsPageRoute() {
   const [mod] = createResource(page, (p) => p.load());
 
   return (
-    <div class="mx-auto flex w-full max-w-6xl gap-10 px-6 py-10">
+    <div class="mx-auto flex w-full max-w-7xl gap-10 px-6 py-10">
       <DocsSidebar />
       <main class="min-w-0 flex-1">
         <Show when={page()}>
@@ -44,6 +45,7 @@ function DocsPageRoute() {
           )}
         </Show>
       </main>
+      <Show when={page()}>{(p) => <OnThisPage headings={p().headings} />}</Show>
     </div>
   );
 }

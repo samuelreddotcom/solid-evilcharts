@@ -15,7 +15,7 @@ import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import type { Plugin } from "vite";
 
-import { SHIKI_THEMES } from "./shiki.ts";
+import { SHIKI_LANGS, SHIKI_THEMES } from "./shiki.ts";
 
 /**
  * `jsx: true` leaves JSX in the output instead of calling a JSX runtime:

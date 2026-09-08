@@ -1,9 +1,11 @@
 declare module "virtual:docs-index" {
+  export type DocsHeading = { depth: 2 | 3; text: string; id: string };
   export type DocsIndexEntry = {
     slug: string;
     title: string;
     description?: string;
     path: string;
+    headings: DocsHeading[];
   };
   export const DOCS_INDEX: DocsIndexEntry[];
 }

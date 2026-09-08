@@ -7,6 +7,7 @@
  * would drag its charts into the entry chunk.
  */
 import { DOCS_INDEX } from "virtual:docs-index";
+import type { DocsHeading } from "virtual:docs-index";
 import type { Component } from "solid-js";
 
 type LazyModule = { default: Component<{ components?: Record<string, unknown> }> };
@@ -25,6 +26,7 @@ export type DocsPage = {
   slug: string;
   title: string;
   description?: string;
+  headings: DocsHeading[];
   load: () => Promise<LazyModule>;
 };
 
@@ -35,7 +37,13 @@ export const DOCS_PAGES: DocsPage[] = DOCS_INDEX.map((entry) => {
     // the two patterns drift. Fail loudly rather than render a blank page.
     throw new Error(`docs: no lazy loader for ${entry.path}`);
   }
-  return { slug: entry.slug, title: entry.title, description: entry.description, load };
+  return {
+    slug: entry.slug,
+    title: entry.title,
+    description: entry.description,
+    headings: entry.headings,
+    load,
+  };
 });
 
 export function findDocsPage(slug: string): DocsPage | undefined {

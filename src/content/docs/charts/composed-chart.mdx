@@ -48,9 +48,17 @@ import { ComposedChartDemo } from "../_demos/composed-chart-demo";
   <ApiRow name="config" type="ChartConfig" required>Covers every bar **and** line.</ApiRow>
   <ApiRow name="xDataKey" type="string" />
   <ApiRow name="renderer" type='"canvas" | "svg"' default='"canvas"' />
-  <ApiRow name="curveType" type="CurveType" default='"linear"' />
+  <ApiRow name="curveType" type="CurveType" default='"linear"'>
+    One of `linear`, `smooth`, `bump`, `monotone`, `monotoneX`, `monotoneY`,
+    `natural`, `step`. Note that this port collapses them to three shapes:
+    `linear` is straight, `step` steps at the midpoint between points, and
+    **every other value renders as `smooth`** — ECharts has no per-curve
+    interpolation to map the rest onto.
+  </ApiRow>
   <ApiRow name="animation" type="boolean" default="true" />
-  <ApiRow name="animationType" type="ComposedAnimationType" default='"left-to-right"' />
+  <ApiRow name="animationType" type="ComposedAnimationType" default='"left-to-right"'>
+    One of `none`, `left-to-right`, `right-to-left`, `center-out`, `edges-in`.
+  </ApiRow>
   <ApiRow name="barGap" type="number | string">Accepts `"30%"` or a pixel number.</ApiRow>
   <ApiRow name="barCategoryGap" type="number | string" />
   <ApiRow name="defaultSelectedDataKey" type="string | null" default="null" />

@@ -78,12 +78,18 @@ const config: ChartConfig = {
   </ApiRow>
   <ApiRow name="curveType" type="CurveType" default='"linear"'>
     Default interpolation each `<Line>` inherits.
+    One of `linear`, `smooth`, `bump`, `monotone`, `monotoneX`, `monotoneY`,
+    `natural`, `step`. Note that this port collapses them to three shapes:
+    `linear` is straight, `step` steps at the midpoint between points, and
+    **every other value renders as `smooth`** — ECharts has no per-curve
+    interpolation to map the rest onto.
   </ApiRow>
   <ApiRow name="animation" type="boolean" default="true">
     Master switch for the intro draw-in. `false` renders instantly.
   </ApiRow>
   <ApiRow name="animationType" type="LineAnimationType" default='"left-to-right"'>
     Default intro reveal. The first `<Line>` drives the wrapper wipe.
+    One of `none`, `left-to-right`, `right-to-left`, `center-out`, `edges-in`.
   </ApiRow>
   <ApiRow name="enableHoverHighlight" type="boolean" default="false">
     Hovering a series dims the others, like a temporary selection.

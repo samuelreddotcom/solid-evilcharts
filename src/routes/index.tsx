@@ -36,7 +36,7 @@ const PHASES = [
 function Home() {
   return (
     <main class="mx-auto max-w-3xl px-8 py-12">
-      <h1 class="text-2xl font-semibold tracking-tight">@solid-foundation/charts</h1>
+      <h1 class="text-2xl font-semibold tracking-tight">Solid EvilCharts</h1>
       <p class="text-muted-foreground mt-2 text-sm">
         Static, beautifully designed charts for SolidJS, powered by Apache ECharts.
       </p>

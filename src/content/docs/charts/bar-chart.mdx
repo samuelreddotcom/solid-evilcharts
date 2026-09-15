@@ -70,7 +70,9 @@ import { BarChartDemo } from "../_demos/bar-chart-demo";
   <ApiRow name="barGap" type="number">Gap between bars in the same category, in pixels.</ApiRow>
   <ApiRow name="barCategoryGap" type="number">Gap between categories, in pixels.</ApiRow>
   <ApiRow name="animation" type="boolean" default="true" />
-  <ApiRow name="animationType" type="BarAnimationType" default='"left-to-right"' />
+  <ApiRow name="animationType" type="BarAnimationType" default='"left-to-right"'>
+    One of `none`, `left-to-right`, `right-to-left`, `center-out`, `edges-in`.
+  </ApiRow>
   <ApiRow name="enableMaxValueHighlight" type="boolean" default="false">
     Colours only the tallest column and mutes the rest. With several series the
     comparison is per **column** — the total across every series at that

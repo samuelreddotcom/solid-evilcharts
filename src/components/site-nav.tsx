@@ -46,7 +46,7 @@ export function SiteNav() {
           class="text-foreground mr-2 font-medium"
           activeOptions={{ exact: true }}
         >
-          @solid-foundation/charts
+          Solid EvilCharts
         </Link>
 
         <For each={CHART_LINKS}>{(item) => <NavLink to={item.to}>{item.label}</NavLink>}</For>

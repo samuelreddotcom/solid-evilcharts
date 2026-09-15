@@ -1,4 +1,4 @@
-# @solid-foundation/charts
+# Solid EvilCharts
 
 Static, beautifully designed charts for **SolidJS**, powered by [Apache ECharts](https://echarts.apache.org/).
 

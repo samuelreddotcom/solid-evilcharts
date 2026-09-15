@@ -17,11 +17,28 @@ const ROUTES_DIR = join(import.meta.dirname, "../routes");
 /** Route files that are not chart demos. */
 const NON_CHART_ROUTES = new Set(["__root", "index", "previews"]);
 
-const routeNames = readdirSync(ROUTES_DIR)
-  .filter((file) => file.endsWith(".tsx"))
-  .map((file) => file.replace(/\.tsx$/, ""));
+const entries = readdirSync(ROUTES_DIR, { withFileTypes: true });
+
+const routeNames = entries
+  .filter((e) => e.isFile() && e.name.endsWith(".tsx"))
+  .map((e) => e.name.replace(/\.tsx$/, ""));
+
+/**
+ * Nested route directories, e.g. `routes/docs/$.tsx` serving `/docs/<anything>`.
+ *
+ * A splat route matches every path under its prefix, so the honest check for
+ * `/docs/introduction` is that `routes/docs/` exists — verifying the leaf would
+ * mean resolving MDX slugs here, which `docs-pages.test.tsx` already does.
+ */
+const routeDirs = entries.filter((e) => e.isDirectory()).map((e) => e.name);
 
 const chartRoutes = routeNames.filter((name) => !NON_CHART_ROUTES.has(name));
+
+/** Does a nav path correspond to a route file or a nested route directory? */
+function hasRoute(path: string): boolean {
+  const name = path.replace(/^\//, "");
+  return routeNames.includes(name) || routeDirs.includes(name.split("/")[0]!);
+}
 
 describe("site nav", () => {
   it("finds the chart routes on disk (guards against the scan matching nothing)", () => {
@@ -35,10 +52,9 @@ describe("site nav", () => {
   });
 
   it("links to nothing that does not exist", () => {
-    const onDisk = new Set(routeNames);
     const broken = [...CHART_LINKS, ...OTHER_LINKS]
-      .map((item) => item.to.replace(/^\//, ""))
-      .filter((name) => !onDisk.has(name));
+      .map((item) => item.to)
+      .filter((path) => !hasRoute(path));
     expect(broken, "nav entries with no route file").toEqual([]);
   });
 

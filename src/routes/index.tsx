@@ -64,10 +64,20 @@ function Home() {
       </div>
 
       <h2 class="mt-10 text-sm font-medium">Also here</h2>
-      <div class="mt-3">
+      <div class="mt-3 grid gap-2 sm:grid-cols-2">
+        <Link
+          to="/docs/$"
+          params={{ _splat: "introduction" }}
+          class="border-border hover:bg-muted/50 flex flex-col gap-1 rounded-lg border p-3 transition-colors"
+        >
+          <span class="text-sm font-medium">Documentation</span>
+          <span class="text-muted-foreground text-xs">
+            Installation, chart config, and an API reference for all eight charts.
+          </span>
+        </Link>
         <Link
           to="/previews"
-          class="border-border hover:bg-muted/50 flex flex-col gap-1 rounded-lg border p-3 transition-colors sm:w-1/2"
+          class="border-border hover:bg-muted/50 flex flex-col gap-1 rounded-lg border p-3 transition-colors"
         >
           <span class="text-sm font-medium">UI previews</span>
           <span class="text-muted-foreground text-xs">
@@ -76,6 +86,18 @@ function Home() {
         </Link>
       </div>
 
+      {/*
+        Dev only — a deployed site should not advertise which phases are unfinished.
+
+        This hides it; it does not strip it. Vite does inline the constant to
+        `false`, but Solid's compiler wraps any in-JSX condition in a reactive
+        memo (`createMemo(() => false)`) and hoists the markup templates to
+        module scope, so Rollup cannot prove the branch dead. PHASES and the
+        template strings stay in the bundle, unrendered and unreachable. Getting
+        them out would take a dynamic import, which is not worth ~600 bytes.
+      */}
+      {import.meta.env.DEV && (
+        <>
       <h2 class="mt-10 text-sm font-medium">Progress</h2>
       <ul class="mt-3 space-y-1.5">
         <For each={PHASES}>
@@ -98,6 +120,8 @@ function Home() {
           )}
         </For>
       </ul>
+        </>
+      )}
 
       <p class="text-muted-foreground mt-10 text-xs">
         Pre-alpha. Nothing is published yet.

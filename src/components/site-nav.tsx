@@ -23,7 +23,10 @@ export const CHART_LINKS: NavItem[] = [
 ];
 
 /** Not a chart — the vendored design-system component gallery. */
-export const OTHER_LINKS: NavItem[] = [{ to: "/previews", label: "UI previews" }];
+export const OTHER_LINKS: NavItem[] = [
+  { to: "/docs/introduction", label: "Docs" },
+  { to: "/previews", label: "UI previews" },
+];
 
 function NavLink(props: { to: string; children: JSX.Element }) {
   return (

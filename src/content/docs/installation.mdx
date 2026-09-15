@@ -36,9 +36,9 @@ runtime package to depend on and no version to keep in step.
     <StepContent>
       <StepDescription>
         The CLI needs this file to know where things go. `style` is required —
-        omit it and `add` fails with a message that names no field. The
-        `registries` entry is what makes `@solid-foundation/…` resolve here
-        rather than against ui.shadcn.com.
+        omit it and `add` fails with a message that names no field. There is no
+        registry to configure: the charts live in a GitHub repository, and the
+        CLI reads it directly.
       </StepDescription>
 
 ```json
@@ -59,9 +59,6 @@ runtime package to depend on and no version to keep in step.
     "ui": "~/components/ui",
     "lib": "~/lib",
     "hooks": "~/hooks"
-  },
-  "registries": {
-    "@solid-foundation": "https://example.com/r/{name}.json"
   }
 }
 ```
@@ -81,6 +78,11 @@ runtime package to depend on and no version to keep in step.
         shared modules it imports and nothing else.
       </StepDescription>
       <CommandBlock registryItem="line-chart" />
+      <StepDescription>
+        That installs from the default branch. Append `#v0.1.0` — or any tag,
+        branch or commit SHA — to pin what you get:
+        `…/line-chart#v0.1.0`.
+      </StepDescription>
     </StepContent>
   </Step>
 </Steps>

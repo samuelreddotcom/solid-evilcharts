@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && tsc --noEmit",
+    "registry:build": "node scripts/build-registry.mts",
     "serve": "vite preview",
     "start": "vite",
     "test": "vitest run",

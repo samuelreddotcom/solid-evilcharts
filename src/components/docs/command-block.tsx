@@ -14,8 +14,15 @@ import { For, Show } from "solid-js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { CopyButton } from "./copy-button";
 
-/** Must match the `registries` key a consumer puts in components.json. */
-export const REGISTRY_NAMESPACE = "@solid-foundation";
+/**
+ * The GitHub item address prefix, `owner/repo`.
+ *
+ * A GitHub repository with a root registry.json IS the registry — there is no
+ * host, no base URL and nothing for a consumer to add to components.json. Keep
+ * this in step with OWNER/REPO in scripts/build-registry.mts —
+ * registry-refs.test.ts asserts the two agree.
+ */
+export const REGISTRY_REPO = "thesambayo/solid-evilcharts";
 
 const MANAGERS = [
   { id: "pnpm", label: "pnpm", add: "pnpm add", exec: "pnpm dlx" },
@@ -28,7 +35,7 @@ type Props = { packages?: string[]; registryItem?: string };
 
 function commandFor(pm: (typeof MANAGERS)[number], props: Props): string {
   if (props.registryItem) {
-    return `${pm.exec} shadcn@latest add ${REGISTRY_NAMESPACE}/${props.registryItem}`;
+    return `${pm.exec} shadcn@latest add ${REGISTRY_REPO}/${props.registryItem}`;
   }
   return `${pm.add} ${(props.packages ?? []).join(" ")}`;
 }

@@ -1,0 +1,413 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "charts-core",
+      "type": "registry:lib",
+      "title": "Charts Core",
+      "description": "Shared chart primitives: colour tokens, series helpers, slots, and the ECharts tooltip, legend, dot, brush and paint modules. Installed automatically by every chart.",
+      "dependencies": [
+        "echarts",
+        "solid-js"
+      ],
+      "files": [
+        {
+          "path": "lib/chart-background.tsx",
+          "type": "registry:lib",
+          "target": "components/solid-charts/lib/chart-background.tsx"
+        },
+        {
+          "path": "lib/chart-series.ts",
+          "type": "registry:lib",
+          "target": "components/solid-charts/lib/chart-series.ts"
+        },
+        {
+          "path": "lib/chart-tokens.ts",
+          "type": "registry:lib",
+          "target": "components/solid-charts/lib/chart-tokens.ts"
+        },
+        {
+          "path": "lib/echarts-brush.ts",
+          "type": "registry:lib",
+          "target": "components/solid-charts/lib/echarts-brush.ts"
+        },
+        {
+          "path": "lib/echarts-dot.ts",
+          "type": "registry:lib",
+          "target": "components/solid-charts/lib/echarts-dot.ts"
+        },
+        {
+          "path": "lib/echarts-legend.tsx",
+          "type": "registry:lib",
+          "target": "components/solid-charts/lib/echarts-legend.tsx"
+        },
+        {
+          "path": "lib/echarts-paint.ts",
+          "type": "registry:lib",
+          "target": "components/solid-charts/lib/echarts-paint.ts"
+        },
+        {
+          "path": "lib/echarts-tooltip.ts",
+          "type": "registry:lib",
+          "target": "components/solid-charts/lib/echarts-tooltip.ts"
+        },
+        {
+          "path": "lib/slots.tsx",
+          "type": "registry:lib",
+          "target": "components/solid-charts/lib/slots.tsx"
+        }
+      ],
+      "cssVars": {
+        "light": {
+          "chart-1": "oklch(0.646 0.222 41.116)",
+          "chart-2": "oklch(0.6 0.118 184.704)",
+          "chart-3": "oklch(0.398 0.07 227.392)",
+          "chart-4": "oklch(0.828 0.189 84.429)",
+          "chart-5": "oklch(0.769 0.188 70.08)"
+        },
+        "dark": {
+          "chart-1": "oklch(0.488 0.243 264.376)",
+          "chart-2": "oklch(0.696 0.17 162.48)",
+          "chart-3": "oklch(0.769 0.188 70.08)",
+          "chart-4": "oklch(0.627 0.265 303.9)",
+          "chart-5": "oklch(0.645 0.246 16.439)"
+        }
+      }
+    },
+    {
+      "name": "area-chart",
+      "type": "registry:component",
+      "title": "Area Chart",
+      "description": "A Solid area chart built on Apache ECharts.",
+      "dependencies": [
+        "echarts",
+        "solid-js"
+      ],
+      "registryDependencies": [
+        "thesambayo/solid-evilcharts/charts-core"
+      ],
+      "files": [
+        {
+          "path": "charts/area-chart/area-chart.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/area-chart/area-chart.tsx"
+        },
+        {
+          "path": "charts/area-chart/fills.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/area-chart/fills.ts"
+        },
+        {
+          "path": "charts/area-chart/index.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/area-chart/index.ts"
+        },
+        {
+          "path": "charts/area-chart/options.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/area-chart/options.ts"
+        },
+        {
+          "path": "charts/area-chart/parts.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/area-chart/parts.tsx"
+        },
+        {
+          "path": "charts/area-chart/types.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/area-chart/types.ts"
+        }
+      ]
+    },
+    {
+      "name": "bar-chart",
+      "type": "registry:component",
+      "title": "Bar Chart",
+      "description": "A Solid bar chart built on Apache ECharts.",
+      "dependencies": [
+        "echarts",
+        "solid-js"
+      ],
+      "registryDependencies": [
+        "thesambayo/solid-evilcharts/charts-core"
+      ],
+      "files": [
+        {
+          "path": "charts/bar-chart/bar-chart.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/bar-chart/bar-chart.tsx"
+        },
+        {
+          "path": "charts/bar-chart/index.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/bar-chart/index.ts"
+        },
+        {
+          "path": "charts/bar-chart/options.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/bar-chart/options.ts"
+        },
+        {
+          "path": "charts/bar-chart/paints.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/bar-chart/paints.ts"
+        },
+        {
+          "path": "charts/bar-chart/parts.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/bar-chart/parts.tsx"
+        },
+        {
+          "path": "charts/bar-chart/types.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/bar-chart/types.ts"
+        }
+      ]
+    },
+    {
+      "name": "composed-chart",
+      "type": "registry:component",
+      "title": "Composed Chart",
+      "description": "A Solid composed chart built on Apache ECharts.",
+      "dependencies": [
+        "echarts",
+        "solid-js"
+      ],
+      "registryDependencies": [
+        "thesambayo/solid-evilcharts/charts-core"
+      ],
+      "files": [
+        {
+          "path": "charts/composed-chart/composed-chart.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/composed-chart/composed-chart.tsx"
+        },
+        {
+          "path": "charts/composed-chart/index.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/composed-chart/index.ts"
+        },
+        {
+          "path": "charts/composed-chart/options.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/composed-chart/options.ts"
+        },
+        {
+          "path": "charts/composed-chart/paints.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/composed-chart/paints.ts"
+        },
+        {
+          "path": "charts/composed-chart/parts.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/composed-chart/parts.tsx"
+        },
+        {
+          "path": "charts/composed-chart/types.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/composed-chart/types.ts"
+        }
+      ]
+    },
+    {
+      "name": "line-chart",
+      "type": "registry:component",
+      "title": "Line Chart",
+      "description": "A Solid line chart built on Apache ECharts.",
+      "dependencies": [
+        "echarts",
+        "solid-js"
+      ],
+      "registryDependencies": [
+        "thesambayo/solid-evilcharts/charts-core"
+      ],
+      "files": [
+        {
+          "path": "charts/line-chart/index.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/line-chart/index.ts"
+        },
+        {
+          "path": "charts/line-chart/line-chart.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/line-chart/line-chart.tsx"
+        },
+        {
+          "path": "charts/line-chart/options.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/line-chart/options.ts"
+        },
+        {
+          "path": "charts/line-chart/parts.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/line-chart/parts.tsx"
+        },
+        {
+          "path": "charts/line-chart/types.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/line-chart/types.ts"
+        }
+      ]
+    },
+    {
+      "name": "pie-chart",
+      "type": "registry:component",
+      "title": "Pie Chart",
+      "description": "A Solid pie chart built on Apache ECharts.",
+      "dependencies": [
+        "echarts",
+        "solid-js"
+      ],
+      "registryDependencies": [
+        "thesambayo/solid-evilcharts/charts-core"
+      ],
+      "files": [
+        {
+          "path": "charts/pie-chart/index.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/pie-chart/index.ts"
+        },
+        {
+          "path": "charts/pie-chart/options.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/pie-chart/options.ts"
+        },
+        {
+          "path": "charts/pie-chart/parts.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/pie-chart/parts.tsx"
+        },
+        {
+          "path": "charts/pie-chart/pie-chart.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/pie-chart/pie-chart.tsx"
+        },
+        {
+          "path": "charts/pie-chart/types.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/pie-chart/types.ts"
+        }
+      ]
+    },
+    {
+      "name": "radar-chart",
+      "type": "registry:component",
+      "title": "Radar Chart",
+      "description": "A Solid radar chart built on Apache ECharts.",
+      "dependencies": [
+        "echarts",
+        "solid-js"
+      ],
+      "registryDependencies": [
+        "thesambayo/solid-evilcharts/charts-core"
+      ],
+      "files": [
+        {
+          "path": "charts/radar-chart/index.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/radar-chart/index.ts"
+        },
+        {
+          "path": "charts/radar-chart/options.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/radar-chart/options.ts"
+        },
+        {
+          "path": "charts/radar-chart/parts.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/radar-chart/parts.tsx"
+        },
+        {
+          "path": "charts/radar-chart/radar-chart.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/radar-chart/radar-chart.tsx"
+        },
+        {
+          "path": "charts/radar-chart/types.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/radar-chart/types.ts"
+        }
+      ]
+    },
+    {
+      "name": "radial-chart",
+      "type": "registry:component",
+      "title": "Radial Chart",
+      "description": "A Solid radial chart built on Apache ECharts.",
+      "dependencies": [
+        "echarts",
+        "solid-js"
+      ],
+      "registryDependencies": [
+        "thesambayo/solid-evilcharts/charts-core"
+      ],
+      "files": [
+        {
+          "path": "charts/radial-chart/index.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/radial-chart/index.ts"
+        },
+        {
+          "path": "charts/radial-chart/options.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/radial-chart/options.ts"
+        },
+        {
+          "path": "charts/radial-chart/parts.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/radial-chart/parts.tsx"
+        },
+        {
+          "path": "charts/radial-chart/radial-chart.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/radial-chart/radial-chart.tsx"
+        },
+        {
+          "path": "charts/radial-chart/types.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/radial-chart/types.ts"
+        }
+      ]
+    },
+    {
+      "name": "sankey-chart",
+      "type": "registry:component",
+      "title": "Sankey Chart",
+      "description": "A Solid sankey chart built on Apache ECharts.",
+      "dependencies": [
+        "echarts",
+        "solid-js"
+      ],
+      "registryDependencies": [
+        "thesambayo/solid-evilcharts/charts-core"
+      ],
+      "files": [
+        {
+          "path": "charts/sankey-chart/index.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/sankey-chart/index.ts"
+        },
+        {
+          "path": "charts/sankey-chart/options.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/sankey-chart/options.ts"
+        },
+        {
+          "path": "charts/sankey-chart/parts.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/sankey-chart/parts.tsx"
+        },
+        {
+          "path": "charts/sankey-chart/sankey-chart.tsx",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/sankey-chart/sankey-chart.tsx"
+        },
+        {
+          "path": "charts/sankey-chart/types.ts",
+          "type": "registry:component",
+          "target": "components/solid-charts/charts/sankey-chart/types.ts"
+        }
+      ]
+    }
+  ]
+}

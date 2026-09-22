@@ -2,12 +2,15 @@
   "name": "solid-evilcharts",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
   "description": "Static, beautifully designed charts for SolidJS, powered by Apache ECharts.",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && tsc --noEmit",
+    "build": "vite build && node scripts/build-seo.mts && tsc --noEmit",
     "registry:build": "node scripts/build-registry.mts",
     "serve": "vite preview",
     "start": "vite",
@@ -16,7 +19,9 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "seo:build": "node scripts/build-seo.mts",
+    "og:build": "rsvg-convert -w 1200 -h 630 scripts/art/og.svg -o public/og.png && rsvg-convert -w 180 -h 180 public/favicon.svg -o public/apple-touch-icon.png"
   },
   "dependencies": {
     "@ark-ui/solid": "^5.37.0",

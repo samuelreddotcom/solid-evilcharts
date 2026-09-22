@@ -104,6 +104,14 @@ export type AreaVariant =
   | "hatched"
   | "none";
 
+/**
+ * Variants painted as a tiling <canvas> and handed to ECharts as an image
+ * pattern. The SVG renderer cannot draw one, so these come out flat under
+ * `renderer="svg"` without any error. Exported so the runtime warning and the
+ * test that guards this list read the same source.
+ */
+export const CANVAS_ONLY_AREA_VARIANTS = ["dotted", "lines", "hatched"] as const;
+
 export type StrokeVariant = "solid" | "dashed" | "animated-dashed";
 
 /** How multiple areas combine. `expanded` normalises each row to 100%. */

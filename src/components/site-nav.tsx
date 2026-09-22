@@ -8,25 +8,12 @@
 import { Link } from "@tanstack/solid-router";
 import { For, type JSX } from "solid-js";
 
-type NavItem = { to: string; label: string };
+import { CHART_LINKS, OTHER_LINKS } from "../lib/nav";
 
-/** Charts, in the order they were ported. */
-export const CHART_LINKS: NavItem[] = [
-  { to: "/line-chart", label: "Line" },
-  { to: "/area-chart", label: "Area" },
-  { to: "/bar-chart", label: "Bar" },
-  { to: "/composed-chart", label: "Composed" },
-  { to: "/pie-chart", label: "Pie" },
-  { to: "/radial-chart", label: "Radial" },
-  { to: "/radar-chart", label: "Radar" },
-  { to: "/sankey-chart", label: "Sankey" },
-];
-
-/** Not a chart — the vendored design-system component gallery. */
-export const OTHER_LINKS: NavItem[] = [
-  { to: "/docs/introduction", label: "Docs" },
-  { to: "/previews", label: "UI previews" },
-];
+// The link tables live in `~/lib/nav.ts` so the post-build SEO script can read
+// them without importing JSX. Re-exported here because this is where callers
+// have always found them.
+export { CHART_LINKS, OTHER_LINKS };
 
 function NavLink(props: { to: string; children: JSX.Element }) {
   return (

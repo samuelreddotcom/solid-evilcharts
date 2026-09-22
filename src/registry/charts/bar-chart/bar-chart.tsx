@@ -15,6 +15,7 @@ import type { BarSeriesOption } from "echarts/charts";
 import * as echarts from "echarts/core";
 
 import { buildChartCss, resolveColors, type ResolvedColors } from "../../lib/chart-tokens";
+import { warnCanvasOnlyVariants } from "../../lib/dev-warn";
 import {
   syncBrushOverlay,
   type BrushGeometry,
@@ -42,6 +43,7 @@ import {
 import {
   BAR_GROW_DURATION,
   BAR_STAGGER,
+  CANVAS_ONLY_BAR_VARIANTS,
   DEFAULT_BAR_RADIUS,
   EXPAND_COLLAPSED,
   EXPAND_TAU,
@@ -202,6 +204,17 @@ function EChartsBarChartRoot<TData extends Record<string, unknown>>(
   const brushHeight = () => brushSlot().height ?? 56;
 
   const seriesKeys = createMemo(() => bars().map((bar) => bar.dataKey));
+
+  // A canvas-only fill under the SVG renderer draws flat instead of erroring,
+  // so nothing tells the reader their variant was ignored. Dev-only.
+  createEffect(() => {
+    warnCanvasOnlyVariants(
+      "Bar chart",
+      props.renderer,
+      bars().map((bar) => bar.variant),
+      CANVAS_ONLY_BAR_VARIANTS,
+    );
+  });
 
   const isHorizontal = () => props.layout === "horizontal";
   const isStacked = () => props.stackType === "stacked" || props.stackType === "percent";

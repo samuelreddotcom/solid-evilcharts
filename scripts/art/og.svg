@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="area" x1="0" y1="330" x2="0" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1447e6" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#1447e6" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="area2" x1="0" y1="380" x2="0" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ad46ff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ad46ff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="stroke1" x1="0" y1="0" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1447e6"/>
+      <stop offset="1" stop-color="#7aa2ff"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#090909"/>
+
+  <g stroke="#1c1c1c" stroke-width="1">
+    <path d="M0 150.5H1200M0 270.5H1200M0 390.5H1200M0 510.5H1200"/>
+    <path d="M150.5 0V630M350.5 0V630M550.5 0V630M750.5 0V630M950.5 0V630"/>
+  </g>
+
+  <g transform="translate(0,96)">
+  <path d="M0 470 L100 430 L200 455 L300 380 L400 405 L500 330 L600 355 L700 285 L800 310 L900 235 L1000 255 L1100 195 L1200 215 V630 H0 Z" fill="url(#area)"/>
+  <path d="M0 470 L100 430 L200 455 L300 380 L400 405 L500 330 L600 355 L700 285 L800 310 L900 235 L1000 255 L1100 195 L1200 215"
+        stroke="url(#stroke1)" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <path d="M0 560 L100 540 L200 550 L300 505 L400 525 L500 480 L600 500 L700 455 L800 470 L900 430 L1000 445 L1100 405 L1200 420 V630 H0 Z" fill="url(#area2)"/>
+  <path d="M0 560 L100 540 L200 550 L300 505 L400 525 L500 480 L600 500 L700 455 L800 470 L900 430 L1000 445 L1100 405 L1200 420"
+        stroke="#ad46ff" stroke-width="4" stroke-opacity="0.85" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <g fill="#090909" stroke="#7aa2ff" stroke-width="4">
+    <circle cx="900" cy="235" r="9"/>
+    <circle cx="1100" cy="195" r="9"/>
+  </g>
+  <circle cx="1100" cy="195" r="20" fill="#7aa2ff" fill-opacity="0.18"/>
+  </g>
+
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+    <text x="80" y="170" fill="#fafafa" font-size="82" font-weight="700" letter-spacing="-2">Solid EvilCharts</text>
+    <text x="80" y="228" fill="#a1a1a1" font-size="33" font-weight="400">Static, beautifully designed charts for SolidJS.</text>
+    <text x="80" y="300" font-size="25" font-weight="500">
+      <tspan fill="#00bc7d">Apache ECharts</tspan><tspan dx="16" fill="#3f3f46">/</tspan><tspan dx="16" fill="#fff" fill-opacity="0"> </tspan><tspan fill="#fe9a00">copy-paste, not a dependency</tspan><tspan dx="16" fill="#3f3f46">/</tspan><tspan dx="16" fill="#fff" fill-opacity="0"> </tspan><tspan fill="#ff2056">8 charts, MIT</tspan>
+    </text>
+  </g>
+
+  <rect x="0" y="0" width="1200" height="6" fill="#1447e6"/>
+</svg>

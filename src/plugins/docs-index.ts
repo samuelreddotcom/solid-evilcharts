@@ -73,30 +73,40 @@ function walk(dir: string): string[] {
   });
 }
 
-export function docsIndex(contentDir: string): Plugin {
+/**
+ * The docs index, read straight off disk.
+ *
+ * Exported separately from the plugin because `scripts/build-seo.mts` needs the
+ * same titles and descriptions to write per-route <head> tags and the sitemap,
+ * and it runs after `vite build` with no Vite around to resolve a virtual
+ * module. Sharing the function rather than re-parsing the frontmatter is what
+ * stops the sidebar and the sitemap from ever describing different sites.
+ */
+export function buildDocsIndex(contentDir: string): DocsIndexEntry[] {
   const root = resolve(contentDir);
+  return (
+    walk(root)
+      .map((file) => {
+        const { data, content } = matter(readFileSync(file, "utf8"));
+        const slug = relative(root, file).replace(/\.mdx$/, "");
+        return {
+          slug,
+          title: typeof data.title === "string" ? data.title : slug,
+          description: typeof data.description === "string" ? data.description : undefined,
+          order: typeof data.order === "number" ? data.order : Number.MAX_SAFE_INTEGER,
+          group: typeof data.group === "string" ? data.group : undefined,
+          path: file,
+          headings: headingsOf(content),
+        };
+      })
+      // Explicit `order` first, alphabetical for anything that forgot one, so a
+      // new page appears somewhere sensible rather than vanishing to the end.
+      .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
+  );
+}
 
-  function build(): DocsIndexEntry[] {
-    return (
-      walk(root)
-        .map((file) => {
-          const { data, content } = matter(readFileSync(file, "utf8"));
-          const slug = relative(root, file).replace(/\.mdx$/, "");
-          return {
-            slug,
-            title: typeof data.title === "string" ? data.title : slug,
-            description: typeof data.description === "string" ? data.description : undefined,
-            order: typeof data.order === "number" ? data.order : Number.MAX_SAFE_INTEGER,
-            group: typeof data.group === "string" ? data.group : undefined,
-            path: file,
-            headings: headingsOf(content),
-          };
-        })
-        // Explicit `order` first, alphabetical for anything that forgot one, so a
-        // new page appears somewhere sensible rather than vanishing to the end.
-        .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
-    );
-  }
+export function docsIndex(contentDir: string): Plugin {
+  const build = () => buildDocsIndex(contentDir);
 
   return {
     name: "docs-index",

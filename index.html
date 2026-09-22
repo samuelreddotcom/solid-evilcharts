@@ -3,7 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Solid EvilCharts</title>
+    <meta name="theme-color" content="#090909" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!--
+      Everything between the markers is REPLACED PER ROUTE by
+      scripts/build-seo.mts after `vite build`. What is written here is the dev
+      default and the fallback for any URL without a prebuilt file; do not
+      remove the markers, and do not add og:/twitter: tags outside them — the
+      script would then leave duplicates in the served HTML.
+    -->
+    <!-- seo:start -->
+    <title>Solid EvilCharts — charts for SolidJS</title>
+    <meta
+      name="description"
+      content="Static, beautifully designed charts for SolidJS, powered by Apache ECharts."
+    />
+    <link rel="canonical" href="https://solid-evilcharts.pages.dev/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Solid EvilCharts" />
+    <meta property="og:title" content="Solid EvilCharts — charts for SolidJS" />
+    <meta
+      property="og:description"
+      content="Static, beautifully designed charts for SolidJS, powered by Apache ECharts."
+    />
+    <meta property="og:url" content="https://solid-evilcharts.pages.dev/" />
+    <meta property="og:image" content="https://solid-evilcharts.pages.dev/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Solid EvilCharts — charts for SolidJS" />
+    <meta
+      name="twitter:description"
+      content="Static, beautifully designed charts for SolidJS, powered by Apache ECharts."
+    />
+    <meta name="twitter:image" content="https://solid-evilcharts.pages.dev/og.png" />
+    <!-- seo:end -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

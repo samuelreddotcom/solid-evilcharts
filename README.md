@@ -1,6 +1,16 @@
-# Solid EvilCharts
+<p align="center">
+  <img src="public/og.png" alt="Solid EvilCharts — static, beautifully designed charts for SolidJS" width="820">
+</p>
 
-Static, beautifully designed charts for **SolidJS**, powered by [Apache ECharts](https://echarts.apache.org/).
+<h1 align="center">Solid EvilCharts</h1>
+
+<p align="center">
+  Static, beautifully designed charts for <b>SolidJS</b>, powered by
+  <a href="https://echarts.apache.org/">Apache ECharts</a>.<br>
+  <a href="https://solid-evilcharts.pages.dev"><b>Documentation &amp; live demos →</b></a>
+</p>
+
+---
 
 > ### Credit where it's due
 >
@@ -11,35 +21,57 @@ Static, beautifully designed charts for **SolidJS**, powered by [Apache ECharts]
 > If you write React, **use the original** — it's excellent, and it's the upstream this
 > project follows.
 
----
+## Install
+
+Charts are distributed like shadcn/ui components: the CLI copies the source into your
+project and it is yours from then on. No runtime package, no version to keep in step.
+
+```bash
+npm install echarts
+npx shadcn@latest add thesambayo/solid-evilcharts/line-chart
+```
+
+Do **not** run `shadcn init` — it is React-only and will overwrite `src/lib/utils.ts`.
+Write `components.json` by hand instead; the
+[installation guide](https://solid-evilcharts.pages.dev/docs/installation) has the file to
+copy.
+
+## Charts
+
+Eight, each with its own docs page and a live demo:
+
+|                                                                           |                                                       |
+| ------------------------------------------------------------------------- | ----------------------------------------------------- |
+| [Line](https://solid-evilcharts.pages.dev/docs/charts/line-chart)         | Strokes, dots, brush, buffer tail, glow, hover reveal |
+| [Area](https://solid-evilcharts.pages.dev/docs/charts/area-chart)         | Seven fills, stacking, 100% stacks                    |
+| [Bar](https://solid-evilcharts.pages.dev/docs/charts/bar-chart)           | Eight fills, layout swap, max-value highlighting      |
+| [Composed](https://solid-evilcharts.pages.dev/docs/charts/composed-chart) | Bars and lines on shared axes                         |
+| [Pie](https://solid-evilcharts.pages.dev/docs/charts/pie-chart)           | Sectors, donuts, labels, 11 backgrounds               |
+| [Radial](https://solid-evilcharts.pages.dev/docs/charts/radial-chart)     | Polar bars, gauges, semi arcs                         |
+| [Radar](https://solid-evilcharts.pages.dev/docs/charts/radar-chart)       | One polygon per series, polygon or circular grids     |
+| [Sankey](https://solid-evilcharts.pages.dev/docs/charts/sankey-chart)     | Flow diagram with a column-by-column intro cascade    |
+
+Plus the shared parts they are built from —
+[tooltip](https://solid-evilcharts.pages.dev/docs/ui/tooltip),
+[legend](https://solid-evilcharts.pages.dev/docs/ui/legend),
+[dots](https://solid-evilcharts.pages.dev/docs/ui/dots),
+[brush](https://solid-evilcharts.pages.dev/docs/ui/brush).
 
 ## Status
 
-**Pre-alpha — nothing is published yet.** See [`../PLAN.md`](../PLAN.md) for the full build
-plan and current phase.
+**Working, not yet 1.0.** All eight charts are ported and installable, the docs site is
+live, and the suite is 686 tests green. The API can still change — nothing is tagged yet,
+so pin by reading the source you installed.
 
-| Phase | | |
-|---|---|---|
-| 0 | Spike the config-as-children pattern | ✅ done — 11/11 gates |
-| 1 | Repo scaffold | ✅ done |
-| 2 | Tokens + vendored UI primitives | ✅ done |
-| 3 | Engine-neutral core | ✅ done |
-| 4 | Shared primitives (dot, tooltip, legend, brush) | ✅ done |
-| 5 | Line chart | ✅ done |
-| 6 | Area chart | ✅ done |
-| 7 | Remaining charts — all 8 ported ✅ |  |
-| 8 | Registry / distribution | 👈 next |
-| 9 | Docs site | |
-| 10 | TanStack Charts as a second engine | |
+Known gaps, honestly: nothing canvas-only (pattern fills, glows, gradient strokes) is
+verified by machine, and a second rendering engine
+([TanStack Charts](https://tanstack.com/charts)) is deferred until it reaches beta.
 
 ## Stack
 
-- **SolidJS** 1.9
-- **Apache ECharts** 6 — modular `echarts/core` entrypoints, canvas + SVG renderers
-- **Vite** 8 + **TanStack Solid Router** — mirrors
-  [`solid-foundation-design-system`](../../solid-foundation-design-system)
-- **Tailwind** 4 + **Ark UI** for the docs chrome
-- **oxlint** / **oxfmt**
+- **SolidJS** 1.9 · **Apache ECharts** 6 (modular `echarts/core`, canvas + SVG renderers)
+- **Vite** 8 + **TanStack Solid Router** · **Tailwind** 4 + **Ark UI** for the docs chrome
+- **oxlint** / **oxfmt** · **Vitest**
 
 ## Develop
 
@@ -47,9 +79,12 @@ plan and current phase.
 pnpm install
 pnpm dev      # http://localhost:9501
 pnpm test     # vitest
-pnpm build    # vite build + tsc --noEmit
+pnpm build    # vite build + per-route <head> + tsc --noEmit
 pnpm lint
 ```
+
+`src/registry/` is the subtree that ships — nothing in it may import outside it, and
+`boundary.test.ts` enforces that. Everything else is the docs app.
 
 ## License
 

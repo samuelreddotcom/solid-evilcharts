@@ -17,3 +17,6 @@ public/r
 # NOTE: registry.json and src/registry/registry.json are generated, but they are
 # COMMITTED ON PURPOSE — a GitHub registry is a repo with a root registry.json in
 # it. Ignoring them makes the registry resolve to nothing, silently.
+
+# `wrangler pages dev dist` — used to verify Cloudflare routing locally.
+.wrangler

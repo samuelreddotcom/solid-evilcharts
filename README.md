@@ -86,6 +86,18 @@ pnpm lint
 `src/registry/` is the subtree that ships — nothing in it may import outside it, and
 `boundary.test.ts` enforces that. Everything else is the docs app.
 
+### Formatting
+
+`pnpm fmt` runs [oxfmt](https://oxc.rs) at 90 columns over `.ts`/`.tsx`/`.mts` only.
+`.oxfmtrc.jsonc` documents why it is scoped that way — in short, the MDX docs tables, the
+CSS token file and the generated `registry.json` are all hand- or machine-maintained and
+oxfmt would rewrite them unhelpfully. Formatting `registry.json` in particular turns
+`pnpm test` red, because `registry.test.ts` compares it against its generator.
+
+The repo has never been fully formatted, so the first `pnpm fmt` will touch ~80 files.
+Run it on a clean tree and commit it on its own, or it buries whatever else you were
+working on.
+
 ## License
 
 MIT — see [LICENSE](./LICENSE). Retains the upstream EvilCharts copyright.

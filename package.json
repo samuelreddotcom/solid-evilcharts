@@ -4,6 +4,9 @@
   "private": true,
   "description": "Static, beautifully designed charts for SolidJS, powered by Apache ECharts.",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

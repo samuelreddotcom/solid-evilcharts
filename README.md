@@ -86,6 +86,16 @@ pnpm lint
 `src/registry/` is the subtree that ships — nothing in it may import outside it, and
 `boundary.test.ts` enforces that. Everything else is the docs app.
 
+### Node version
+
+`.node-version` pins 24.12.0, and `engines` sets the real floor at **22.18.0**.
+
+That floor is not arbitrary: `scripts/build-seo.mts` imports `../src/lib/seo.ts` and two
+other `.ts` files directly, so `node` has to strip the types itself. Native type stripping
+only became unflagged in 22.18.0 — on anything older the build dies at
+`ERR_UNKNOWN_FILE_EXTENSION: Unknown file extension ".mts"`, which names the entry file and
+says nothing about the Node version that actually caused it.
+
 ### Formatting
 
 `pnpm fmt` runs [oxfmt](https://oxc.rs) at 90 columns over `.ts`/`.tsx`/`.mts` only.

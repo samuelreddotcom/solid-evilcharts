@@ -1,3 +1,4 @@
+import { warnMissingNodeLabelPosition } from "../../lib/dev-warn";
 import { createMarker, findSlot, slotProps, slotsOf } from "../../lib/slots";
 import {
   DEFAULT_NODE_PADDING,
@@ -47,6 +48,9 @@ export function collectConfig(children: unknown): CollectedConfig {
     const labelSlot = findSlot(slotsOf(props.children), "nodeLabel");
     if (labelSlot) {
       const labelProps = slotProps<NodeLabelProps>(labelSlot);
+      // The one slot prop here with no default: undefined renders no labels at
+      // all, and the chart otherwise looks healthy. Dev-only.
+      if (labelProps.position === undefined) warnMissingNodeLabelPosition();
       nodeLabel = {
         position: labelProps.position,
         showValues: labelProps.showValues ?? false,

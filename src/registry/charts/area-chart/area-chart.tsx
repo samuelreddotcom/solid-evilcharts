@@ -14,6 +14,7 @@ import {
 import * as echarts from "echarts/core";
 
 import { buildChartCss, resolveColors, type ResolvedColors } from "../../lib/chart-tokens";
+import { warnCanvasOnlyVariants } from "../../lib/dev-warn";
 import {
   syncBrushOverlay,
   type BrushGeometry,
@@ -51,6 +52,7 @@ import {
   type OptionBuildContext,
 } from "./options";
 import {
+  CANVAS_ONLY_AREA_VARIANTS,
   BUFFERFILL_PREFIX,
   BUFFER_PREFIX,
   LOADING_ANIMATION_DURATION,
@@ -207,6 +209,17 @@ function EChartsAreaChartRoot<TData extends Record<string, unknown>>(
   const brushHeight = () => brushSlot().height ?? 56;
 
   const seriesKeys = createMemo(() => areas().map((area) => area.dataKey));
+
+  // A canvas-only fill under the SVG renderer draws flat instead of erroring,
+  // so nothing tells the reader their variant was ignored. Dev-only.
+  createEffect(() => {
+    warnCanvasOnlyVariants(
+      "Area chart",
+      props.renderer,
+      areas().map((area) => area.variant),
+      CANVAS_ONLY_AREA_VARIANTS,
+    );
+  });
 
   const isStacked = () => props.stackType === "stacked" || props.stackType === "expanded";
   const isExpanded = () => props.stackType === "expanded";

@@ -118,6 +118,12 @@ export type BarVariant =
   | "gradient"
   | "stripped";
 
+/**
+ * A smaller list than the bar chart's — this chart has no `blocks`. Painted as
+ * a canvas pattern, so it renders flat under `renderer="svg"`.
+ */
+export const CANVAS_ONLY_BAR_VARIANTS = ["hatched"] as const;
+
 export type StrokeVariant = "solid" | "dashed" | "animated-dashed";
 
 export type ComposedAnimationType =

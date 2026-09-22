@@ -124,6 +124,12 @@ export type BarVariant =
   | "blocks"
   | "expandable";
 
+/**
+ * Variants painted as a tiling <canvas> pattern, which the SVG renderer cannot
+ * draw — they fall back to a flat fill under `renderer="svg"`, silently.
+ */
+export const CANVAS_ONLY_BAR_VARIANTS = ["hatched", "blocks"] as const;
+
 export type StackType = "default" | "stacked" | "percent";
 
 export type BarLayout = "vertical" | "horizontal";

@@ -31,10 +31,21 @@ describe("the split itself", () => {
     expect(imports.filter((i) => i.includes("echarts"))).toEqual([]);
   });
 
-  it("chart-tokens imports nothing at runtime — types only", () => {
-    const runtimeImports = [...source.matchAll(/^import\s+(?!type\b)[\s\S]*?from/gm)];
-    expect(runtimeImports).toEqual([]);
-    expect(imports).toEqual(["solid-js"]);
+  it("chart-tokens imports only engine-neutral siblings", () => {
+    // Pinned deliberately, exactly as before: adding an import here stays a
+    // reviewed act. ./dev-warn is admitted because it is neutral BY
+    // CONSTRUCTION — see the assertion below, which is what keeps this
+    // relaxation honest rather than a hole.
+    expect(imports).toEqual(["solid-js", "./dev-warn"]);
+  });
+
+  it("dev-warn imports nothing at all, so the neutrality is transitive", () => {
+    // Without this, an `echarts` import added to dev-warn.ts would reach
+    // chart-tokens through the back door and the test above would still pass:
+    // it only greps chart-tokens' OWN source.
+    const devWarn = readFileSync(resolve(import.meta.dirname, "./dev-warn.ts"), "utf8");
+    const devWarnImports = [...devWarn.matchAll(/^import[\s\S]*?from\s+"([^"]+)"/gm)];
+    expect(devWarnImports.map((m) => m[1]!)).toEqual([]);
   });
 });
 

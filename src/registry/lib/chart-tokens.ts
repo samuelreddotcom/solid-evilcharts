@@ -1,5 +1,7 @@
 import type { Component, JSX } from "solid-js";
 
+import { warnUnconfiguredKeys } from "./dev-warn";
+
 /**
  * Engine-neutral chart colour plumbing.
  *
@@ -237,6 +239,8 @@ export function resolveColors(
   config: ChartConfig,
   seriesKeys: string[],
 ): ResolvedColors {
+  warnUnconfiguredKeys(seriesKeys, config);
+
   const computed = getComputedStyle(container);
   const series: Record<string, string[]> = {};
 

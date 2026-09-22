@@ -15,6 +15,7 @@ import * as echarts from "echarts/core";
 
 import { getLoadingData } from "../../lib/chart-series";
 import { buildChartCss, resolveColors, type ResolvedColors } from "../../lib/chart-tokens";
+import { warnCanvasOnlyVariants } from "../../lib/dev-warn";
 import {
   syncBrushOverlay,
   type BrushGeometry,
@@ -55,6 +56,7 @@ import {
   LOADING_BAR_MAX_OPACITY,
   LOADING_DEFAULT_BARS,
   LOADING_LINE_MAX_OPACITY,
+  CANVAS_ONLY_BAR_VARIANTS,
   LOADING_LINE_WIDTH,
   REVEAL_DURATION,
   type EChartsComposedChartProps,
@@ -184,6 +186,17 @@ function EChartsComposedChartRoot<TData extends Record<string, unknown>>(
     ...bars().map((bar) => bar.dataKey),
     ...lines().map((line) => line.dataKey),
   ]);
+
+  // A canvas-only fill under the SVG renderer draws flat instead of erroring,
+  // so nothing tells the reader their variant was ignored. Dev-only.
+  createEffect(() => {
+    warnCanvasOnlyVariants(
+      "Composed chart",
+      props.renderer,
+      bars().map((bar) => bar.variant),
+      CANVAS_ONLY_BAR_VARIANTS,
+    );
+  });
 
   const xCategoryKey = createMemo(() => {
     const fromAxis = xAxisSlot().dataKey;

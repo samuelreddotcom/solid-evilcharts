@@ -27,6 +27,11 @@
           "target": "components/solid-charts/lib/chart-tokens.ts"
         },
         {
+          "path": "lib/dev-warn.ts",
+          "type": "registry:lib",
+          "target": "components/solid-charts/lib/dev-warn.ts"
+        },
+        {
           "path": "lib/echarts-brush.ts",
           "type": "registry:lib",
           "target": "components/solid-charts/lib/echarts-brush.ts"

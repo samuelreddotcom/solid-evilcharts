@@ -20,7 +20,9 @@
     // verbatimModuleSyntax is deliberately OFF. It buys style, not safety, and
     // solid-foundation-design-system doesn't use it — enabling it here would
     // force an edit into every vendored component and guarantee drift.
-    "paths": { "~/*": ["./src/*"] },
+    // `@/*` is what the vendored Solid Arc components import through; app code
+    // uses `~/*`. Both point at src.
+    "paths": { "~/*": ["./src/*"], "@/*": ["./src/*"] },
 
     // Type Checking & Safety
     "skipLibCheck": true,

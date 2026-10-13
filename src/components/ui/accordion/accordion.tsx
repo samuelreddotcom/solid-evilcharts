@@ -2,12 +2,25 @@ import { Accordion as AccordionPrimitive } from "@ark-ui/solid/accordion";
 import { ChevronDownIcon } from "lucide-solid";
 import { type ComponentProps, splitProps } from "solid-js";
 
-import { cn } from "../../../lib/cn";
+import { cn } from "@/lib/utils";
 
 function Accordion(props: ComponentProps<typeof AccordionPrimitive.Root>) {
   const [local, rest] = splitProps(props, ["class"]);
   return (
     <AccordionPrimitive.Root
+      data-slot="accordion"
+      class={cn("flex w-full flex-col", local.class)}
+      {...rest}
+    />
+  );
+}
+
+function AccordionRootProvider(
+  props: ComponentProps<typeof AccordionPrimitive.RootProvider>,
+) {
+  const [local, rest] = splitProps(props, ["class"]);
+  return (
+    <AccordionPrimitive.RootProvider
       data-slot="accordion"
       class={cn("flex w-full flex-col", local.class)}
       {...rest}
@@ -62,4 +75,14 @@ function AccordionContent(
   );
 }
 
-export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };
+const AccordionContext = AccordionPrimitive.Context;
+
+export {
+  Accordion,
+  AccordionRootProvider,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+  AccordionContext,
+};
+export { useAccordion, useAccordionContext } from "@ark-ui/solid/accordion";

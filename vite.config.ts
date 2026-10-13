@@ -27,7 +27,11 @@ export default defineConfig(({ command }) => ({
     solid({ extensions: [".mdx"] }),
   ],
   resolve: {
-    alias: { "~": resolve(import.meta.dirname, "src") },
+    alias: {
+      "~": resolve(import.meta.dirname, "src"),
+      // Vendored Solid Arc components import through @/ (see components/ui/VENDORED.md).
+      "@": resolve(import.meta.dirname, "src"),
+    },
   },
   build: {
     target: "esnext",

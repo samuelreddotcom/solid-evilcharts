@@ -1,0 +1,31 @@
+/* Accordion — open/close height animation. Ark exposes --height on item-content. */
+
+@keyframes accordionDown {
+  from {
+    opacity: 0.01;
+    height: 0;
+  }
+  to {
+    opacity: 1;
+    height: var(--height);
+  }
+}
+
+@keyframes accordionUp {
+  from {
+    opacity: 1;
+    height: var(--height);
+  }
+  to {
+    opacity: 0.01;
+    height: 0;
+  }
+}
+
+[data-scope="accordion"][data-part="item-content"][data-state="open"] {
+  animation: accordionDown 250ms ease-in-out;
+}
+
+[data-scope="accordion"][data-part="item-content"][data-state="closed"] {
+  animation: accordionUp 200ms ease-in-out;
+}

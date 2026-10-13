@@ -1,7 +1,7 @@
 /** An aside. `variant="warn"` for the things that cost someone an afternoon. */
 import type { JSX } from "solid-js";
 
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 
 export function Callout(props: {
   variant?: "note" | "warn";

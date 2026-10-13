@@ -22,7 +22,10 @@ export default defineConfig({
   // reactivity silently no-ops. Verified in the Phase 0 spike.
   resolve: {
     conditions: ["development", "browser"],
-    alias: { "~": resolve(import.meta.dirname, "src") },
+    alias: {
+      "~": resolve(import.meta.dirname, "src"),
+      "@": resolve(import.meta.dirname, "src"),
+    },
   },
   test: {
     environment: "jsdom",

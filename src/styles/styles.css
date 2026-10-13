@@ -1,7 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "./foundation.css";
-@import "./shadcn.css";
+@import "./variants.css";
+
+/* Per-component CSS for the vendored Solid Arc components that need it. */
+@import "../components/ui/accordion/accordion.css";
+@import "../components/ui/separator/separator.css";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Design tokens — ported from EvilCharts (src/app/globals.css), MIT.

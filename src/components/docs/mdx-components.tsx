@@ -28,7 +28,7 @@ import { Show, splitProps } from "solid-js";
 import type { Component, JSX } from "solid-js";
 import { Dynamic } from "solid-js/web";
 
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 
 import { ApiHeading, ApiRow, ApiTable } from "./api-table";
 import { Callout } from "./callout";

@@ -1,14 +1,8 @@
 /**
  * Skeleton — a pulsing placeholder for content that hasn't loaded.
  *
- * Not vendored: solid-foundation-design-system has no Skeleton. Written here to
- * match its conventions (data-slot, splitProps, cn) so it can be upstreamed
- * as-is if that repo ever wants one.
- *
- * Note this is for *page chrome* — a docs sidebar or a card outline. Charts
- * have their own loading state: EvilCharts draws a clipped shimmer sweep inside
- * the canvas rather than covering it with a grey block. Don't reach for this to
- * wrap a chart.
+ * For page chrome — a sidebar, a card outline, a row of text. Give it the
+ * size of what it stands in for.
  *
  * Usage:
  *   <Skeleton class="h-4 w-32" />
@@ -16,7 +10,7 @@
  */
 import { type ComponentProps, splitProps } from "solid-js";
 
-import { cn } from "../../../lib/cn";
+import { cn } from "@/lib/utils";
 
 function Skeleton(props: ComponentProps<"div">) {
   const [local, others] = splitProps(props, ["class"]);
@@ -24,7 +18,8 @@ function Skeleton(props: ComponentProps<"div">) {
   return (
     <div
       data-slot="skeleton"
-      class={cn("bg-muted animate-pulse rounded-md", local.class)}
+      aria-hidden="true"
+      class={cn("animate-pulse rounded-md bg-muted", local.class)}
       {...others}
     />
   );

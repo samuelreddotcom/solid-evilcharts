@@ -1,3 +1,26 @@
+/**
+ * Select — Ark UI's select machine, styled.
+ *
+ * Usage:
+ *   const frameworks = createListCollection({ items: [...] });
+ *   <Select collection={frameworks}>
+ *     <SelectLabel>Framework</SelectLabel>
+ *     <SelectControl>
+ *       <SelectTrigger>
+ *         <SelectValueText placeholder="Pick one" />
+ *       </SelectTrigger>
+ *     </SelectControl>
+ *     <SelectContent>
+ *       <Index each={frameworks.items}>
+ *         {(item) => <SelectItem item={item()}>{item().label}</SelectItem>}
+ *       </Index>
+ *       <SelectEmpty />
+ *     </SelectContent>
+ *   </Select>
+ *
+ * Controlled from outside: `const select = useSelect({...})` +
+ * `<SelectRootProvider value={select}>`.
+ */
 import {
   Select as SelectPrimitive,
   useSelectContext,
@@ -15,7 +38,7 @@ import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-solid";
 import { type ComponentProps, type JSX, Show, splitProps } from "solid-js";
 import { Portal } from "solid-js/web";
 
-import { cn } from "../../../lib/cn";
+import { cn } from "@/lib/utils";
 
 function SelectLabel(props: SelectLabelProps) {
   const [local, rest] = splitProps(props, ["class"]);
@@ -188,6 +211,18 @@ function Select<T>(props: SelectRootProps<T>) {
   );
 }
 
+/** Pair with `useSelect()` to drive the select from outside. */
+function SelectRootProvider<T>(
+  props: ComponentProps<typeof SelectPrimitive.RootProvider<T>>,
+) {
+  return (
+    <SelectPrimitive.RootProvider<T> data-slot="select" {...props}>
+      {props.children}
+      <SelectPrimitive.HiddenSelect data-slot="select-hidden-select" />
+    </SelectPrimitive.RootProvider>
+  );
+}
+
 function SelectSeparator(props: ComponentProps<"div">) {
   const [local, rest] = splitProps(props, ["class"]);
   return (
@@ -201,23 +236,25 @@ function SelectSeparator(props: ComponentProps<"div">) {
 
 function SelectEmpty(props: ComponentProps<"div">) {
   const select = useSelectContext();
-  const [local, rest] = splitProps(props, ["class"]);
-  if (select().collection.size === 0) {
-    return (
+  const [local, rest] = splitProps(props, ["class", "children"]);
+  // Reactive: re-evaluates as the collection is filtered.
+  return (
+    <Show when={select().collection.size === 0}>
       <div
+        data-slot="select-empty"
         role="presentation"
-        class={cn("p-2 text-center", local.class)}
+        class={cn("p-2 text-center text-sm text-muted-foreground", local.class)}
         {...rest}
       >
-        {rest.children ?? "No results"}
+        {local.children ?? "No results"}
       </div>
-    );
-  }
-  return null;
+    </Show>
+  );
 }
 
 export {
   Select,
+  SelectRootProvider,
   SelectLabel,
   SelectControl,
   SelectTrigger,
@@ -230,3 +267,8 @@ export {
   SelectSeparator,
   SelectContext,
 };
+export {
+  createListCollection,
+  useSelect,
+  useSelectContext,
+} from "@ark-ui/solid/select";

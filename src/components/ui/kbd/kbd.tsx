@@ -1,6 +1,6 @@
-import { ComponentProps, splitProps } from "solid-js";
+import { type ComponentProps, splitProps } from "solid-js";
 
-import { cn } from "../../../lib/cn";
+import { cn } from "@/lib/utils";
 
 function Kbd(props: ComponentProps<"kbd">) {
   const [local, others] = splitProps(props, ["class"]);
@@ -15,7 +15,7 @@ function Kbd(props: ComponentProps<"kbd">) {
         "pointer-events-none select-none",
         "[&_svg:not([class*='size-'])]:size-3",
         "in-data-[slot=tooltip-content]:bg-background/20 in-data-[slot=tooltip-content]:text-background",
-        local,
+        local.class,
       )}
       {...others}
     />

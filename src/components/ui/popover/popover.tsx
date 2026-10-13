@@ -3,11 +3,11 @@ import { XIcon } from "lucide-solid";
 import { type ComponentProps, splitProps } from "solid-js";
 import { Portal } from "solid-js/web";
 
-import { cn } from "../../../lib/cn";
-import { buttonVariants } from "../button";
+import { buttonVariants } from "@/components/ui/button/button";
+import { cn } from "@/lib/utils";
 
 function Popover(props: ComponentProps<typeof PopoverPrimitive.Root>) {
-  return <PopoverPrimitive.Root data-slot="popover" {...props} />;
+  return <PopoverPrimitive.Root {...props} />;
 }
 
 function PopoverTrigger(
@@ -108,10 +108,13 @@ function PopoverClose(
   );
 }
 
+/** Pair with `usePopover()` to control it from outside. */
+const PopoverRootProvider = PopoverPrimitive.RootProvider;
 const PopoverContext = PopoverPrimitive.Context;
 
 export {
   Popover,
+  PopoverRootProvider,
   PopoverTrigger,
   PopoverAnchor,
   PopoverContent,
@@ -121,3 +124,4 @@ export {
   PopoverClose,
   PopoverContext,
 };
+export { usePopover, usePopoverContext } from "@ark-ui/solid/popover";

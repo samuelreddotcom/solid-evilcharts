@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
  *
  * Everything under `src/registry/` is DISTRIBUTED — `shadcn add` copies these
  * files verbatim into someone else's project, where `src/routes`,
- * `src/components/ui` and `src/lib/cn.ts` do not exist. An import that reaches
+ * `src/components/ui` and `src/lib/utils.ts` do not exist. An import that reaches
  * outside this directory compiles fine here and breaks every installed copy,
  * and it breaks it at the consumer's `tsc`, never in our CI. Hence this test.
  *
@@ -28,7 +28,7 @@ const REGISTRY = resolve(import.meta.dirname);
  * Packages a distributed file may import. Keep in sync with registry.json.
  *
  * Note what is NOT here: `solid-js/web` (tests only, for `render`), and
- * `clsx` / `tailwind-merge` (only `src/lib/cn.ts` wants those, and it stayed
+ * `clsx` / `tailwind-merge` (only `src/lib/utils.ts` wants those, and it stayed
  * outside the registry). The whole runtime surface is echarts + solid-js.
  */
 const ALLOWED_PACKAGES = [
@@ -111,7 +111,7 @@ describe("registry boundary", () => {
   });
 
   it("ships no `cn` — the vendored UI owns that, and it is not distributed", () => {
-    // src/lib/cn.ts deliberately stayed outside the registry: only
+    // src/lib/utils.ts deliberately stayed outside the registry: only
     // src/components/ui/** uses it, so the registry needs neither the file nor
     // clsx/tailwind-merge in its dependency list.
     const offenders = FILES.filter((f) => /\bcn\(/.test(readFileSync(f, "utf8")));

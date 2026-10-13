@@ -6,10 +6,10 @@ import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-solid";
 import { type ComponentProps, splitProps } from "solid-js";
 import { Portal } from "solid-js/web";
 
-import { cn } from "../../../lib/cn";
+import { cn } from "@/lib/utils";
 
 function DropdownMenu(props: ComponentProps<typeof MenuPrimitive.Root>) {
-  return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
+  return <MenuPrimitive.Root {...props} />;
 }
 
 function DropdownMenuTrigger(
@@ -166,7 +166,7 @@ function DropdownMenuRadioItem(
 }
 
 function DropdownMenuSub(props: ComponentProps<typeof MenuPrimitive.Root>) {
-  return <MenuPrimitive.Root data-slot="dropdown-menu-sub" {...props} />;
+  return <MenuPrimitive.Root {...props} />;
 }
 
 function DropdownMenuSubTrigger(props: MenuTriggerItemProps) {
@@ -225,10 +225,13 @@ function DropdownMenuShortcut(props: ComponentProps<"span">) {
   );
 }
 
+/** Pair with `useMenu()` to control it from outside. */
+const DropdownMenuRootProvider = MenuPrimitive.RootProvider;
 const DropdownMenuContext = MenuPrimitive.Context;
 
 export {
   DropdownMenu,
+  DropdownMenuRootProvider,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -244,3 +247,4 @@ export {
   DropdownMenuShortcut,
   DropdownMenuContext,
 };
+export { useMenu, useMenuContext } from "@ark-ui/solid/menu";

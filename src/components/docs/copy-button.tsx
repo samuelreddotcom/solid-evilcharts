@@ -1,6 +1,6 @@
 import { Show, createSignal, onCleanup } from "solid-js";
 
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 
 /**
  * Copy-to-clipboard button.

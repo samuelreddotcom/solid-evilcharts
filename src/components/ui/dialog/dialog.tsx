@@ -3,11 +3,11 @@ import { XIcon } from "lucide-solid";
 import { type ComponentProps, splitProps } from "solid-js";
 import { Portal } from "solid-js/web";
 
-import { cn } from "../../../lib/cn";
-import { buttonVariants } from "../button/button";
+import { buttonVariants } from "@/components/ui/button/button";
+import { cn } from "@/lib/utils";
 
 function Dialog(props: ComponentProps<typeof DialogPrimitive.Root>) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />;
+  return <DialogPrimitive.Root {...props} />;
 }
 
 function DialogTrigger(props: ComponentProps<typeof DialogPrimitive.Trigger>) {
@@ -130,10 +130,13 @@ function DialogDescription(
   );
 }
 
+/** Pair with `useDialog()` to control it from outside. */
+const DialogRootProvider = DialogPrimitive.RootProvider;
 const DialogContext = DialogPrimitive.Context;
 
 export {
   Dialog,
+  DialogRootProvider,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -144,3 +147,4 @@ export {
   DialogTrigger,
   DialogContext,
 };
+export { useDialog, useDialogContext } from "@ark-ui/solid/dialog";

@@ -2,7 +2,7 @@ import { Tabs as TabsPrimitive } from "@ark-ui/solid/tabs";
 import type { ComponentProps } from "solid-js";
 import { mergeProps, splitProps } from "solid-js";
 
-import { cn } from "../../../lib/cn";
+import { cn } from "@/lib/utils";
 
 interface TabsListProps extends ComponentProps<typeof TabsPrimitive.List> {
   variant?: "default" | "line";
@@ -13,6 +13,21 @@ function Tabs(props: ComponentProps<typeof TabsPrimitive.Root>) {
   const [local, rest] = splitProps(merged, ["class"]);
   return (
     <TabsPrimitive.Root
+      data-slot="tabs"
+      class={cn("group/tabs flex flex-col gap-2", local.class)}
+      {...rest}
+    />
+  );
+}
+
+/** Pair with `useTabs()` — pass options (incl. activationMode) to the hook. */
+function TabsRootProvider(
+  props: ComponentProps<typeof TabsPrimitive.RootProvider>,
+) {
+  const [local, rest] = splitProps(props, ["class"]);
+  return (
+    <TabsPrimitive.RootProvider
+      data-slot="tabs"
       class={cn("group/tabs flex flex-col gap-2", local.class)}
       {...rest}
     />
@@ -23,6 +38,7 @@ function TabsList(props: TabsListProps) {
   const [local, rest] = splitProps(props, ["class", "variant"]);
   return (
     <TabsPrimitive.List
+      data-slot="tabs-list"
       data-variant={local.variant ?? "default"}
       class={cn(
         "group/tabs-list inline-flex items-center",
@@ -41,6 +57,7 @@ function TabsTrigger(props: ComponentProps<typeof TabsPrimitive.Trigger>) {
   const [local, rest] = splitProps(props, ["class"]);
   return (
     <TabsPrimitive.Trigger
+      data-slot="tabs-trigger"
       class={cn(
         "relative inline-flex cursor-pointer items-center justify-center gap-1.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors",
         "hover:text-foreground",
@@ -71,10 +88,21 @@ function TabsContent(props: ComponentProps<typeof TabsPrimitive.Content>) {
   const [local, rest] = splitProps(props, ["class"]);
   return (
     <TabsPrimitive.Content
+      data-slot="tabs-content"
       class={cn("focus-visible:outline-none", local.class)}
       {...rest}
     />
   );
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent };
+const TabsContext = TabsPrimitive.Context;
+
+export {
+  Tabs,
+  TabsRootProvider,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  TabsContext,
+};
+export { useTabs, useTabsContext } from "@ark-ui/solid/tabs";

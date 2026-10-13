@@ -1,5 +1,22 @@
 /**
- * Command — searchable palette (think ⌘K).
+ * Command v2 — searchable palette (think ⌘K).
+ *
+ * v2 keeps v1's engine wholesale (it's faster and better-behaved than the
+ * cmdk-solid port) and layers on the genuinely-useful features that port had:
+ *
+ *   • IME-safe Enter        — no accidental select mid-composition (CJK input)
+ *   • Full keyboard nav     — Home/End, loop, vim (ctrl+n/j/p/k),
+ *                             meta+↑/↓ first/last, alt+↑/↓ jump groups
+ *   • shouldFilter={false}  — opt out of built-in filtering for async/server
+ *                             results you render yourself
+ *   • Controlled highlight  — `value` + `onValueChange` on <Command>
+ *   • forceMount            — keep an item/group rendered regardless of filter
+ *   • disablePointerSelection — don't move the highlight on hover
+ *   • --cmdk-list-height    — CSS var on <CommandList> for height animation
+ *
+ * Everything below the "engine" line is unchanged from v1 in spirit; read v1's
+ * header for the deep rationale on the registry / DOM-order / CSS-hidden
+ * decisions. The short version:
  *
  * Architecture: items self-register with a shared registry on mount, by
  * value. The parent `Command` keeps the ordered list of registered values
@@ -17,57 +34,23 @@
  * ─── Filtering: fuzzy score, not substring ──────────────────────────────────
  *
  * The default filter is a port of cmdk's `command-score` algorithm: it
- * returns a number in [0, 1], rewards word-boundary matches, penalises
- * skipped characters and transpositions. Items with score > 0 are visible.
- * `CommandItem` accepts an optional `keywords` array — useful when the
- * label is short ("Profile") but you want to match on synonyms
- * ("settings", "account").
+ * returns a number in [0, 1]. Items with score > 0 are visible. `CommandItem`
+ * accepts an optional `keywords` array to match on synonyms. Override with
+ * `filter` on <Command>, or turn filtering off entirely with
+ * `shouldFilter={false}` (then you render/prune items yourself).
  *
- * We do NOT reorder items by score — they stay in DOM order. Reordering
- * would require imperative DOM manipulation (cmdk's approach) or CSS `order`
- * tricks, and would also make keyboard nav feel non-linear. Stable order is
- * a better tradeoff than rank-perfect display for this size of palette.
- *
- * "DOM order" — not "registration order". Items can mount in arbitrary order
- * (a dynamic group rendered above the static one in JSX will mount later but
- * appear earlier visually). Keyboard nav must follow what the eye sees. So
- * `register()` takes the item's DOM element and sorts the registry by
- * `compareDocumentPosition` on every mount/unmount. Mount order is an
- * implementation detail; document position is the source of truth.
- *
- * To override, pass `filter` to `<Command>`:
- *   filter: (label, query, keywords?) => number
+ * We do NOT reorder items by score — they stay in DOM order. (Note: the
+ * cmdk-solid port's score-sort is disabled there too — sorting <For>-generated
+ * nodes desyncs Solid's renderer. Stable order is the right call regardless.)
  *
  * ─── IMPORTANT: visibility uses CSS `hidden`, NOT `<Show>` ───────────────────
  *
- * CommandItem and CommandGroup hide themselves with the `hidden` Tailwind
- * class when filtered out. They stay in the DOM. We do NOT wrap them in
- * `<Show when={isVisible}>` even though that would be the natural Solid idiom.
- *
- * Why: items register themselves with the Command via `onMount` and
- * unregister via `onCleanup`. If we used `<Show>` to hide filtered items:
- *
- *   1. Type "xyz" in the search → no items match.
- *   2. <Show>s become false → CommandItems unmount.
- *   3. onCleanup fires on every item → registry is wiped.
- *   4. Clear the search → query is "" → would-be-visible items have no
- *      registration → CommandEmpty stays on screen → palette is dead.
- *
- * The same trap closes on first render if onMount races with the reactive
- * gate on CommandGroup: Group 1's items register, flip the gate, Group 2's
- * <Show> evaluates false before Group 2's items get a chance to mount and
- * register → Group 2 never appears.
- *
- * Rule of thumb: when a component owns a registration / subscription / any
- * side effect a parent depends on, **don't gate it with `<Show>` based on
- * data that side effect produces.** That's a circular dependency: the
- * unmount destroys the state that determined the mount. Use CSS visibility
- * instead — the component stays alive, the side effect persists, only the
- * pixels change.
- *
- * `<Show>` is still the right tool elsewhere in this file (CommandEmpty)
- * — it has no side effects to protect, and we genuinely want it gone
- * from the DOM when there are matches.
+ * CommandItem/CommandGroup hide themselves with the `hidden` class when
+ * filtered out. They stay in the DOM. Wrapping them in `<Show when={visible}>`
+ * would unmount them → fire onCleanup → wipe their registration → the palette
+ * would go dead after a search+clear. See v1's header for the full trap. Use
+ * CSS visibility instead; `<Show>` stays correct for CommandEmpty/Separator,
+ * which own no registration.
  */
 import { Dialog as DialogPrimitive } from "@ark-ui/solid/dialog";
 import { SearchIcon } from "lucide-solid";
@@ -80,14 +63,17 @@ import {
   createMemo,
   createSignal,
   createUniqueId,
+  on,
   onCleanup,
   onMount,
   splitProps,
+  untrack,
   useContext,
 } from "solid-js";
 import { Portal } from "solid-js/web";
 
-import { cn } from "../../../lib/cn";
+import { cn } from "@/lib/utils";
+
 import { commandScore } from "./command-score";
 
 // ─── Command Context ──────────────────────────────────────────────────────────
@@ -114,6 +100,8 @@ type CommandContextValue = {
   setHighlighted: (value: string | null) => void;
   ready: () => boolean;
   loading: () => boolean;
+  shouldFilter: () => boolean;
+  disablePointerSelection: () => boolean;
 };
 
 const CommandCtx = createContext<CommandContextValue | undefined>();
@@ -136,26 +124,39 @@ interface CommandProps {
   filter?: (label: string, query: string, keywords?: string[]) => number;
   /**
    * When true, `CommandEmpty` is suppressed even if no items match the query.
-   * Use this while an async source (network fetch, etc.) is in flight — it
-   * avoids the "No results" flash between keystroke and result arrival.
-   * The consumer is responsible for rendering a spinner somewhere visible.
+   * Use this while an async source is in flight — it avoids the "No results"
+   * flash between keystroke and result arrival.
    */
   loading?: boolean;
+  /**
+   * Set to `false` to turn off built-in filtering. Every registered item stays
+   * visible and you're responsible for rendering only the items you want (e.g.
+   * server-side search). Pairs well with `loading`.
+   */
+  shouldFilter?: boolean;
+  /** Loop the highlight around the ends when arrowing. Default: false. */
+  loop?: boolean;
+  /** Enable ctrl+n/ctrl+j (down) and ctrl+p/ctrl+k (up). Default: true. */
+  vimBindings?: boolean;
+  /** Don't move the highlight on pointer hover. Default: false. */
+  disablePointerSelection?: boolean;
+  /** Controlled highlighted item value. */
+  value?: string;
+  /** Fired whenever the highlighted item value changes. */
+  onValueChange?: (value: string) => void;
 }
 
 function Command(props: CommandProps) {
   // Registry stores the item data + its DOM element. The element is what lets
-  // us order items by DOM position rather than mount order — important when
-  // dynamic groups appear above static groups in the JSX but mount later.
+  // us order items by DOM position rather than mount order.
   const registry = new Map<
     string,
     CommandItemData & { element: HTMLElement }
   >();
   const [orderedValues, setOrderedValues] = createSignal<string[]>([]);
 
-  // Re-sort all registered values by their DOM document position. Called
-  // whenever an item registers or unregisters. compareDocumentPosition is a
-  // native browser API — fast, and authoritative about visual order.
+  // Re-sort registered values by DOM document position. compareDocumentPosition
+  // is a native browser API — fast, and authoritative about visual order.
   const recomputeOrder = () => {
     const values = Array.from(registry.keys());
     values.sort((a, b) => {
@@ -170,9 +171,7 @@ function Command(props: CommandProps) {
     setOrderedValues(values);
   };
 
-  // Batched recompute — when N items mount in one tick (dynamic groups), we
-  // want one sort, not N. queueMicrotask drains before paint, so the user
-  // never sees the pre-sort state.
+  // Batched recompute — N items mounting in one tick get one sort, not N.
   let recomputeScheduled = false;
   const scheduleRecompute = () => {
     if (recomputeScheduled) return;
@@ -183,23 +182,42 @@ function Command(props: CommandProps) {
     });
   };
   const [query, setQuery] = createSignal("");
+  // Initial value (if controlled) is applied by the sync effect below, which
+  // runs on mount before paint — so start null and let it populate.
   const [highlighted, setHighlighted] = createSignal<string | null>(null);
 
+  const shouldFilter = () => props.shouldFilter !== false;
+  const loop = () => props.loop ?? false;
+  const vimBindings = () => props.vimBindings !== false;
+
+  // Controlled highlight: mirror props.value into the internal signal. Tracks
+  // ONLY props.value — also tracking highlighted() would fight the validity
+  // effect below and loop forever.
+  createEffect(
+    on(
+      () => props.value,
+      (value) => {
+        if (value !== undefined && value !== untrack(highlighted)) {
+          setHighlighted(value);
+        }
+      },
+    ),
+  );
+
+  // Notify on highlight change (fires for keyboard, hover, and auto-highlight).
+  let lastNotified: string | null | undefined;
+  createEffect(() => {
+    const h = highlighted();
+    if (h !== lastNotified) {
+      lastNotified = h;
+      props.onValueChange?.(h ?? "");
+    }
+  });
+
   // `ready` gates CommandEmpty / CommandGroup hiding until the initial
-  // registration pass has SETTLED. This is what prevents a "No results" flash
-  // on a static list: items register synchronously in their onMount, but the
-  // reorder that populates `orderedValues` fires in a queueMicrotask (see
-  // scheduleRecompute). If we read isEmpty() before that microtask drains,
-  // a fully-populated list looks empty for a tick.
-  //
-  // Earlier this was a one-way `hasRegistered` latch flipped inside register().
-  // That broke genuinely-empty async lists: before the first fetch nothing ever
-  // registers, so the latch stayed false forever and CommandEmpty never showed
-  // on first load (while showing fine after any search+clear — an inconsistency).
-  //
-  // rAF runs after microtasks + layout, so by the time `ready` flips the
-  // registry and ordering are fully synced — no flash for static lists, and an
-  // empty-from-the-start list correctly shows CommandEmpty.
+  // registration pass has SETTLED — prevents a "No results" flash on a static
+  // list. rAF runs after microtasks + layout, so by the time it flips the
+  // registry and ordering are fully synced. (See v1 header for the history.)
   const [ready, setReady] = createSignal(false);
   onMount(() => {
     const raf = requestAnimationFrame(() => setReady(true));
@@ -211,19 +229,14 @@ function Command(props: CommandProps) {
     ((label: string, q: string, keywords?: string[]) =>
       commandScore(label, q, keywords));
 
-  // Visibility = matches the query (or no query). Disabled is a SEPARATE
-  // dimension — disabled items still render (greyed via data-disabled styling),
-  // they're just non-interactive and skipped by keyboard nav. This split avoids
-  // the "registry hasn't synced yet" flicker that hid disabled items briefly,
-  // then unhid them once a re-render triggered isVisible to re-evaluate.
-  //
-  // `orderedValues` is sorted by DOM document position (see `recomputeOrder`),
-  // not registration order. So `visibleValues` reflects visual order, which
-  // is what keyboard nav needs to feel linear.
+  // Visibility = matches the query (or no query, or filtering is off). Disabled
+  // is a SEPARATE dimension — disabled items still render, greyed and skipped
+  // by keyboard nav. `orderedValues` is DOM order, so `visibleValues` reflects
+  // visual order — what keyboard nav needs to feel linear.
   const visibleValues = createMemo(() => {
     const q = query();
     const ordered = orderedValues();
-    if (!q) return ordered;
+    if (!q || !shouldFilter()) return ordered;
     return ordered.filter((v) => {
       const item = registry.get(v);
       if (!item) return false;
@@ -232,14 +245,6 @@ function Command(props: CommandProps) {
   });
 
   // Derived lookups — memoized so per-item reactivity is O(1) per read.
-  //
-  //   visibleSet      — isVisible(value): O(1) Set.has vs O(N) Array.includes
-  //   visibleGroupSet — hasVisibleItemsInGroup(id): O(1) vs O(V) scan
-  //   navigableValues — keyboard nav: cached array (was a function, recomputed
-  //                     on every keypress)
-  //
-  // Without these, a query change costs O(N²) total — each of N items reads
-  // isVisible, each call walks N visible values. With these, it's O(N).
   const visibleSet = createMemo(() => new Set(visibleValues()));
   const visibleGroupSet = createMemo(() => {
     const groups = new Set<string>();
@@ -253,23 +258,36 @@ function Command(props: CommandProps) {
     visibleValues().filter((v) => !registry.get(v)?.disabled),
   );
 
+  // Ordered list of group ids that currently contain at least one navigable
+  // item — drives alt+↑/↓ group jumping. DOM order, same as navigableValues.
+  const navigableGroupOrder = () => {
+    const seen = new Set<string>();
+    const order: string[] = [];
+    for (const v of navigableValues()) {
+      const gid = registry.get(v)?.groupId;
+      if (gid && !seen.has(gid)) {
+        seen.add(gid);
+        order.push(gid);
+      }
+    }
+    return order;
+  };
+
   // Keep highlight valid as filtered results change.
   createEffect(() => {
     const nav = navigableValues();
     const curr = highlighted();
+    // Before the first registration pass settles the list is empty — don't
+    // clobber an initial controlled value that just hasn't registered yet.
+    if (!ready() && nav.length === 0) return;
     if (curr !== null && !nav.includes(curr)) {
       setHighlighted(nav[0] ?? null);
     } else if (curr === null && nav.length > 0 && query()) {
-      // VENDOR DELTA: `!` for noUncheckedIndexedAccess. Guarded by
-      // nav.length > 0, which TS can't narrow through. See VENDORED.md.
-      setHighlighted(nav[0]!);
+      setHighlighted(nav[0] ?? null);
     }
   });
 
-  // Single effect drives scroll-into-view + onHighlight callback. Previously
-  // this lived per-item: N items × 2 effects, all re-running on every highlight
-  // change. Most just did an equality check and bailed. Now: 1 effect, O(1)
-  // lookup in the registry, one element scrolled, one callback fired.
+  // Single effect drives scroll-into-view + onHighlight callback.
   createEffect(() => {
     const h = highlighted();
     if (!h) return;
@@ -291,9 +309,8 @@ function Command(props: CommandProps) {
     query,
     setQuery,
     isVisible: (value) => {
-      // No query → everything visible (disabled items render greyed, not hidden).
-      // With a query → only items whose label matches the filter.
-      if (!query()) return true;
+      // No query / filtering off → everything visible (disabled renders greyed).
+      if (!query() || !shouldFilter()) return true;
       return visibleSet().has(value);
     },
     isEmpty: () => visibleValues().length === 0,
@@ -302,27 +319,120 @@ function Command(props: CommandProps) {
     setHighlighted,
     ready,
     loading: () => props.loading ?? false,
+    shouldFilter,
+    disablePointerSelection: () => props.disablePointerSelection ?? false,
+  };
+
+  // ── Keyboard navigation ─────────────────────────────────────────────────
+
+  const moveByItem = (change: 1 | -1) => {
+    const nav = navigableValues();
+    if (nav.length === 0) return;
+    const idx = nav.indexOf(highlighted() ?? "");
+    if (idx === -1) {
+      // Nothing (valid) highlighted yet — enter from the appropriate end.
+      setHighlighted(
+        change > 0 ? (nav[0] ?? null) : (nav[nav.length - 1] ?? null),
+      );
+      return;
+    }
+    let next = idx + change;
+    if (loop()) {
+      if (next < 0) next = nav.length - 1;
+      else if (next >= nav.length) next = 0;
+    } else {
+      next = Math.max(0, Math.min(next, nav.length - 1));
+    }
+    setHighlighted(nav[next] ?? null);
+  };
+
+  const moveToEdge = (edge: "first" | "last") => {
+    const nav = navigableValues();
+    if (nav.length === 0) return;
+    setHighlighted((edge === "first" ? nav[0] : nav[nav.length - 1]) ?? null);
+  };
+
+  const moveByGroup = (change: 1 | -1) => {
+    const order = navigableGroupOrder();
+    // No groups (or ungrouped highlight) → fall back to item-wise movement.
+    if (order.length === 0) {
+      moveByItem(change);
+      return;
+    }
+    const nav = navigableValues();
+    const curGid = highlighted()
+      ? registry.get(highlighted()!)?.groupId
+      : undefined;
+
+    let targetGid: string | undefined;
+    if (!curGid || !order.includes(curGid)) {
+      targetGid = change > 0 ? order[0] : order[order.length - 1];
+    } else {
+      const gi = order.indexOf(curGid);
+      let ni = gi + change;
+      if (loop()) {
+        if (ni < 0) ni = order.length - 1;
+        else if (ni >= order.length) ni = 0;
+      } else {
+        ni = Math.max(0, Math.min(ni, order.length - 1));
+      }
+      targetGid = order[ni];
+    }
+
+    const target = nav.find((v) => registry.get(v)?.groupId === targetGid);
+    if (target) setHighlighted(target);
+    else moveByItem(change);
+  };
+
+  const next = (e: KeyboardEvent) => {
+    e.preventDefault();
+    if (e.metaKey) moveToEdge("last");
+    else if (e.altKey) moveByGroup(1);
+    else moveByItem(1);
+  };
+
+  const prev = (e: KeyboardEvent) => {
+    e.preventDefault();
+    if (e.metaKey) moveToEdge("first");
+    else if (e.altKey) moveByGroup(-1);
+    else moveByItem(-1);
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    // Arrow nav over navigable (non-disabled) items only — never land on
-    // something the user can't activate.
-    const nav = navigableValues();
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      const idx = nav.indexOf(highlighted() ?? "");
-      setHighlighted(nav[Math.min(idx + 1, nav.length - 1)] ?? null);
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      const idx = nav.indexOf(highlighted() ?? "");
-      setHighlighted(nav[Math.max(idx - 1, 0)] ?? null);
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      const value = highlighted();
-      const item = value ? registry.get(value) : undefined;
-      // Defense in depth — highlight already skips disabled, but in case state
-      // gets out of sync, never call onSelect on a disabled item.
-      if (item && !item.disabled) item.onSelect?.();
+    switch (e.key) {
+      case "n":
+      case "j":
+        if (vimBindings() && e.ctrlKey) next(e);
+        break;
+      case "ArrowDown":
+        next(e);
+        break;
+      case "p":
+      case "k":
+        if (vimBindings() && e.ctrlKey) prev(e);
+        break;
+      case "ArrowUp":
+        prev(e);
+        break;
+      case "Home":
+        e.preventDefault();
+        moveToEdge("first");
+        break;
+      case "End":
+        e.preventDefault();
+        moveToEdge("last");
+        break;
+      case "Enter": {
+        // IME-safe: don't select while composing (CJK input). keyCode 229 is
+        // the Japanese IME + Safari case where isComposing is unreliable.
+        if (e.isComposing || e.keyCode === 229) break;
+        e.preventDefault();
+        const value = highlighted();
+        const item = value ? registry.get(value) : undefined;
+        // Defense in depth — highlight skips disabled, but never fire on one.
+        if (item && !item.disabled) item.onSelect?.();
+        break;
+      }
     }
   };
 
@@ -360,6 +470,8 @@ function CommandInput(props: ComponentProps<"input">) {
         role="combobox"
         aria-expanded="true"
         autocomplete="off"
+        autocorrect="off"
+        spellcheck={false}
         class={cn(
           "flex h-10 w-full bg-transparent py-2 text-sm outline-none",
           "placeholder:text-muted-foreground",
@@ -379,9 +491,35 @@ function CommandInput(props: ComponentProps<"input">) {
 // ─── CommandList ──────────────────────────────────────────────────────────────
 
 function CommandList(props: ComponentProps<"div">) {
-  const [local, rest] = splitProps(props, ["class"]);
+  const [local, rest] = splitProps(props, ["class", "children"]);
+  let wrapperRef: HTMLDivElement | undefined;
+  let sizerRef: HTMLDivElement | undefined;
+
+  // Publish the intrinsic content height as `--cmdk-list-height` so consumers
+  // can animate the list container (e.g. `height: var(--cmdk-list-height)`).
+  onMount(() => {
+    if (!wrapperRef || !sizerRef) return;
+    const wrapper = wrapperRef;
+    const sizer = sizerRef;
+    let frame: number;
+    const observer = new ResizeObserver(() => {
+      frame = requestAnimationFrame(() => {
+        wrapper.style.setProperty(
+          "--cmdk-list-height",
+          `${sizer.offsetHeight.toFixed(1)}px`,
+        );
+      });
+    });
+    observer.observe(sizer);
+    onCleanup(() => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    });
+  });
+
   return (
     <div
+      ref={wrapperRef}
       data-slot="command-list"
       role="listbox"
       class={cn(
@@ -389,7 +527,11 @@ function CommandList(props: ComponentProps<"div">) {
         local.class,
       )}
       {...rest}
-    />
+    >
+      <div ref={sizerRef} data-slot="command-list-sizer">
+        {local.children}
+      </div>
+    </div>
   );
 }
 
@@ -417,16 +559,24 @@ function CommandEmpty(props: ComponentProps<"div">) {
 
 interface CommandGroupProps extends Omit<ComponentProps<"div">, "heading"> {
   heading?: string;
+  /** Keep the group rendered even when no child matches the current query. */
+  forceMount?: boolean;
 }
 
 function CommandGroup(props: CommandGroupProps) {
-  const [local, rest] = splitProps(props, ["class", "heading", "children"]);
+  const [local, rest] = splitProps(props, [
+    "class",
+    "heading",
+    "forceMount",
+    "children",
+  ]);
   const ctx = useCommandCtx();
   const groupId = createUniqueId();
 
-  // CSS-hide, not <Show> — see file header for why. Unmounting this would
-  // unmount child CommandItems, breaking their registration.
-  const isHidden = () => ctx.ready() && !ctx.hasVisibleItemsInGroup(groupId);
+  // CSS-hide, not <Show> — unmounting would unmount child items and break their
+  // registration. forceMount opts out of hiding entirely.
+  const isHidden = () =>
+    ctx.ready() && !local.forceMount && !ctx.hasVisibleItemsInGroup(groupId);
 
   return (
     <CommandGroupCtx.Provider value={{ groupId }}>
@@ -459,9 +609,6 @@ interface CommandSeparatorProps extends ComponentProps<"div"> {
 function CommandSeparator(props: CommandSeparatorProps) {
   const [local, rest] = splitProps(props, ["class", "alwaysRender"]);
   const ctx = useCommandCtx();
-  // While searching, groups reorder by score — a separator between them
-  // becomes a floating line with no meaningful boundary. `<Show>` is fine
-  // here: no registration to protect.
   return (
     <Show when={local.alwaysRender || !ctx.query()}>
       <div
@@ -482,11 +629,11 @@ interface CommandItemProps extends Omit<ComponentProps<"div">, "onSelect"> {
   disabled?: boolean;
   /** Extra terms to match against when filtering — useful for synonyms. */
   keywords?: string[];
+  /** Keep the item rendered even when it doesn't match the current query. */
+  forceMount?: boolean;
   /**
-   * Fired when this item becomes the highlighted (active) one — via mouse
-   * hover, keyboard nav, or the auto-highlight on filter change. Useful for
-   * showing contextual hints (e.g. a footer that previews the action that
-   * Enter would trigger).
+   * Fired when this item becomes the highlighted (active) one — via hover,
+   * keyboard nav, or the auto-highlight on filter change.
    */
   onHighlight?: () => void;
 }
@@ -499,6 +646,7 @@ function CommandItem(props: CommandItemProps) {
     "onSelect",
     "disabled",
     "keywords",
+    "forceMount",
     "onHighlight",
     "children",
   ]);
@@ -507,11 +655,6 @@ function CommandItem(props: CommandItemProps) {
   let itemRef: HTMLDivElement | undefined;
 
   onMount(() => {
-    // itemRef is guaranteed by Solid to be set by the time onMount fires —
-    // the div has been inserted into the DOM, so register can use its
-    // document position to compute order. onHighlight + scrollIntoView are
-    // driven from a single Command-level effect; we pass the callback up via
-    // the registry rather than running a per-item effect.
     ctx.register(
       {
         value: local.value,
@@ -527,8 +670,8 @@ function CommandItem(props: CommandItemProps) {
   });
   onCleanup(() => ctx.unregister(local.value));
 
-  // CSS-hide, not <Show> — see file header. Unmounting would fire onCleanup
-  // → unregister → item gone forever.
+  // CSS-hide, not <Show> — see file header. forceMount keeps it visible even
+  // when filtered out (you'd prune it yourself if you didn't want it).
   return (
     <div
       ref={itemRef}
@@ -543,14 +686,15 @@ function CommandItem(props: CommandItemProps) {
         "data-highlighted:bg-muted data-highlighted:text-foreground",
         "data-disabled:pointer-events-none data-disabled:opacity-50",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        !ctx.isVisible(local.value) && "hidden",
+        !local.forceMount && !ctx.isVisible(local.value) && "hidden",
         local.class,
       )}
       onClick={() => {
         if (!local.disabled) local.onSelect?.();
       }}
       onMouseEnter={() => {
-        if (!local.disabled) ctx.setHighlighted(local.value);
+        if (!local.disabled && !ctx.disablePointerSelection())
+          ctx.setHighlighted(local.value);
       }}
       {...rest}
     >

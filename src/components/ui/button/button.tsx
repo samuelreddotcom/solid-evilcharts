@@ -25,8 +25,8 @@ import {
   useContext,
 } from "solid-js";
 
-import { cn } from "../../../lib/cn";
-import { Spinner } from "../spinner/spinner";
+import { Spinner } from "@/components/ui/spinner/spinner";
+import { cn } from "@/lib/utils";
 
 export const buttonVariants = cva(
   [

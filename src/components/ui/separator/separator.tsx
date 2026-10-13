@@ -17,7 +17,7 @@
  */
 import { type ComponentProps, splitProps } from "solid-js";
 
-import { cn } from "../../../lib/cn";
+import { cn } from "@/lib/utils";
 
 export type SeparatorProps = ComponentProps<"div"> & {
   orientation?: "horizontal" | "vertical";

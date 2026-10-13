@@ -19,7 +19,7 @@
  */
 import { type ComponentProps, splitProps } from "solid-js";
 
-import { cn } from "../../../lib/cn";
+import { cn } from "@/lib/utils";
 
 type CardSize = "default" | "sm";
 

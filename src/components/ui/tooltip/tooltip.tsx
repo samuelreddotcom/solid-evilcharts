@@ -2,14 +2,14 @@ import { Tooltip as TooltipPrimitive } from "@ark-ui/solid/tooltip";
 import { mergeProps, type ComponentProps, splitProps } from "solid-js";
 import { Portal } from "solid-js/web";
 
-import { cn } from "../../../lib/cn";
+import { cn } from "@/lib/utils";
 
 function Tooltip(props: ComponentProps<typeof TooltipPrimitive.Root>) {
   const merged = mergeProps(
     { openDelay: 400, closeDelay: 0, lazyMount: true, unmountOnExit: true },
     props,
   );
-  return <TooltipPrimitive.Root data-slot="tooltip" {...merged} />;
+  return <TooltipPrimitive.Root {...merged} />;
 }
 
 function TooltipTrigger(
@@ -40,4 +40,15 @@ function TooltipContent(
   );
 }
 
-export { Tooltip, TooltipTrigger, TooltipContent };
+/** Pair with `useTooltip()` to control it from outside. */
+const TooltipRootProvider = TooltipPrimitive.RootProvider;
+const TooltipContext = TooltipPrimitive.Context;
+
+export {
+  Tooltip,
+  TooltipRootProvider,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipContext,
+};
+export { useTooltip, useTooltipContext } from "@ark-ui/solid/tooltip";
